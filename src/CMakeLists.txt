@@ -7,6 +7,7 @@ file(GLOB compressible_source_files compressible/*.F90)
 file(GLOB solid_source_files solid/*.F90)
 file(GLOB poisson_source_files incompressible/poisson/*.F90)
 file(GLOB incompressible_source_files incompressible/*.F90)
+file(GLOB bolt_source_files bolt/*.F90)
 
 # Where to look for FFTW
 set(FFTW_LIBRARY_PATH "${FFTW_PATH}/lib")
@@ -60,4 +61,12 @@ target_link_libraries(IncompressibleOps PadeOps ${MPI_LIBRARIES})
 
 if (MPI_Fortran_COMPILER_FLAGS)
     set_target_properties(IncompressibleOps PROPERTIES COMPILE_FLAGS "${CMAKE_Fortran_FLAGS}")
+endif()
+
+# Create a library called BoltOps
+add_library(BoltOps STATIC ${grid_source_files} ${bolt_source_files})
+target_link_libraries(BoltOps PadeOps ${MPI_LIBRARIES})
+
+if (MPI_Fortran_COMPILER_FLAGS)
+    set_target_properties(BoltOps PROPERTIES COMPILE_FLAGS "${CMAKE_Fortran_FLAGS}")
 endif()
