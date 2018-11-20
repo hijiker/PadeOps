@@ -6,6 +6,10 @@ program channel3d
     use kind_parameters,  only: clen
     use temporalhook, only: doTemporalStuff
     use timer, only: tic, toc
-    use d3q19mod, only: d3q19
+    use d3q19mod, only: d3q19,test_lattice_definition
+
+    type(d3q19) :: lattice 
+
+    call test_lattice_definition()
 
 end program 
