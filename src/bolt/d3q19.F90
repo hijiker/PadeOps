@@ -6,7 +6,6 @@ module d3q19mod
     implicit none
 
     private
-
     public :: d3q19, test_lattice_definition 
 
     integer, parameter :: nvels = 19
@@ -32,13 +31,13 @@ module d3q19mod
 
     type :: d3q19
         private
-        
-        type(decomp_info) :: gp
-        integer :: nx, ny, nz
+
+        type(decomp_info), public :: gp
+        integer, public :: nx, ny, nz
 
         character(len=clen) :: inputdir, outputdir
 
-        real(rkind), dimension(:,:,:,:), allocatable :: f, feq, Force
+        real(rkind), dimension(:,:,:,:), allocatable, public :: f
 
         real(rkind) :: delta_t, delta_x, delta_u
         real(rkind) :: Re
@@ -51,21 +50,28 @@ module d3q19mod
         logical :: useBodyForce 
 
         real(rkind), dimension(:,:), allocatable :: YZslice, XZslice, XYslice
+        real(rkind), dimension(:,:), allocatable :: YZsendb, XZsendb, XYsendb
+        real(rkind), dimension(:), allocatable :: z1d_send, z1d_recv
+
+        integer :: XneighLeft, XneighRight, YneighDown, YneighUp
         contains
             procedure :: init
             procedure :: destroy
-
             procedure :: collide 
             procedure :: stream
-
             procedure :: compute_macroscopic 
 
+            procedure, private :: get_processor_topo
+            procedure, private :: allocate_lattice_memory
 
     end type
 
 
-    logical, parameter :: RestrictToSingleCore = .true. 
 contains
+
+#include "streaming_code/d3q19_streaming.F90"
+#include "domaindecomp_code/Decompose_LBM_z.F90"
+
 
     subroutine init(this,inputfile)
         class(d3q19), intent(inout) :: this
@@ -88,11 +94,43 @@ contains
             this%Qtensor(3,2,idx) = cy(idx)*cz(idx) 
         end do 
 
+
+        call this%get_processor_topo()
+        call this%allocate_lattice_memory()
+
     end subroutine 
 
+    subroutine allocate_lattice_memory(this)
+        class(d3q19), intent(inout) :: this
+
+        allocate(this%f  (this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3),nvels))
+        allocate(this%ux (this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        allocate(this%uy (this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        allocate(this%uz (this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        allocate(this%rho(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        
+        allocate(this%Fx(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        allocate(this%Fy(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        allocate(this%Fz(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+
+        allocate(this%XYslice(this%gp%zsz(1),this%gp%zsz(2)))
+        allocate(this%XZslice(this%gp%zsz(1),this%gp%zsz(3)))
+        allocate(this%YZslice(this%gp%zsz(2),this%gp%zsz(3)))
+        
+        allocate(this%YZsendb(this%gp%zsz(2),this%gp%zsz(3)))
+        allocate(this%XZsendb(this%gp%zsz(1),this%gp%zsz(3)))
+        allocate(this%z1d_send(this%gp%zsz(3)))
+        allocate(this%z1d_recv(this%gp%zsz(3)))
+
+    end subroutine 
+    
     subroutine destroy(this)
         class(d3q19), intent(inout) :: this
 
+        deallocate(this%f, this%ux, this%uy, this%uz, this%rho)
+        deallocate(this%XYslice, this%XZslice, this%YZslice)
+        deallocate(this%YZsendb, this%XZsendb)
+        deallocate(this%z1d_send, this%z1d_recv)
 
     end subroutine 
 
@@ -100,234 +138,30 @@ contains
     subroutine collide(this)
         class(d3q19), intent(inout) :: this
         integer :: i, j, k, idx 
-        real(rkind) :: OneByTau
+        real(rkind) :: OneByTau, feq, Force
 
-
-        if (this%useBodyForce) then
-            do idx = 1,nvels
-                do k = 1,this%gp%xsz(3)
-                    do j = 1,this%gp%xsz(2)
-                        !$omp simd 
-                        do i = 1,this%gp%xsz(1)
-                            oneByTau = one/this%tau(i,j,k)
-                            this%f(i,j,k,idx) = (one - oneByTau)*this%f(i,j,k,idx) + oneByTau*this%f(i,j,k,idx) &
-                                            & + (one - half*oneBytau)*this%Force(i,j,k,idx)
-                        end do 
+        do idx = 1,nvels
+            do k = 1,this%gp%zsz(3)
+                do j = 1,this%gp%zsz(2)
+                    !$omp simd 
+                    do i = 1,this%gp%zsz(1)
+                        call get_Feq_2ndOrder(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
+                                & this%rho(i,j,k),idx,this%Qtensor(:,:,idx),feq)
+                        
+                        call get_ForceSource_2ndOrder(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
+                                & this%Fx(i,j,k), this%Fy(i,j,k), this%Fz(i,j,k), idx, &
+                                & this%Qtensor(:,:,idx), Force)
+                        
+                        oneByTau = one/this%tau(i,j,k)
+                        
+                        this%f(i,j,k,idx) = (one - oneByTau)*this%f(i,j,k,idx) + oneByTau*feq &
+                                        & + (one - half*oneBytau)*Force
                     end do 
                 end do 
             end do 
-        else
-            do idx = 1,nvels
-                do k = 1,this%gp%xsz(3)
-                    do j = 1,this%gp%xsz(2)
-                        !$omp simd 
-                        do i = 1,this%gp%xsz(1)
-                            oneByTau = one/this%tau(i,j,k)
-                            this%f(i,j,k,idx) = (one - oneByTau)*this%f(i,j,k,idx) + oneByTau*this%f(i,j,k,idx) 
-                        end do 
-                    end do 
-                end do 
-            end do 
-        end if 
+        end do 
 
     end subroutine
-
-
-    subroutine stream(this)
-        class(d3q19), intent(inout) :: this
-        integer :: vid, nx, ny, nz
-
-        nx = this%gp%xsz(1)
-        ny = this%gp%xsz(2)
-        nz = this%gp%xsz(3)
-
-        
-        ! Population 1:
-        vid = 1
-        this%YZslice = this%f(nx,:,:,vid)
-        this%f(2:nx,:,:,vid) = this%f(1:nx-1,:,:,vid)
-        this%f(1,:,:,vid) = this%YZslice
-
-        ! Population 2: 
-        vid = 2
-        this%YZslice = this%f(1,:,:,vid)
-        this%f(1:nx-1,:,:,vid) = this%f(2:nx,:,:,vid)
-        this%f(nx,:,:,vid) = this%YZslice
-
-        ! Population 3: 
-        vid = 3
-        this%XZslice = this%f(:,ny,:,vid)
-        this%f(:,2:ny,:,vid) = this%f(:,1:ny-1,:,vid)
-        this%f(:,1,:,vid) = this%XZslice
-
-        ! Population 4: 
-        vid = 4
-        this%XZslice = this%f(:,1,:,vid)
-        this%f(:,1:ny-1,:,vid) = this%f(:,2:ny,:,vid)
-        this%f(:,ny,:,vid) = this%XZslice
-
-        ! Population 5: 
-        vid = 5
-        this%XYslice = this%f(:,:,nz,vid)
-        this%f(:,:,2:nz,vid) = this%f(:,:,1:nz-1,vid)
-        this%f(:,:,1,vid) = this%YZslice
-
-        ! Population 6: 
-        vid = 6
-        this%XYslice = this%f(:,:,1,vid)
-        this%f(:,:,1:nz-1,vid) = this%f(:,:,2:nz,vid)
-        this%f(:,:,nz,vid) = this%YZslice
-
-        ! Population 7: 
-        vid = 7
-        this%YZslice = this%f(nx,:,:,vid)
-        this%XZslice = this%f(:,ny,:,vid)
-        this%f(2:nx,2:ny,:,vid) = this%f(1:nx-1,1:ny-1,:,vid)
-        this%f(1,1,:,vid) = this%XZslice(nx,:)
-        this%f(2:nx,1,:,vid) = this%XZslice(1:nx-1,:)
-        this%f(1,2:ny,:,vid) = this%YZslice(1:ny-1,:)
-
-        ! Population 8: 
-        vid = 8
-        this%YZslice = this%f(1,:,:,vid)
-        this%XZslice = this%f(:,1,:,vid)
-        this%f(1:nx-1,1:ny-1,:,vid) = this%f(2:nx,2:ny,:,vid)
-        this%f(nx,ny,:,vid) = this%XZslice(1,:)
-        this%f(1:nx-1,ny,:,vid) = this%XZslice(2:nx,:)
-        this%f(nx,1:ny-1,:,vid) = this%YZslice(2:ny,:)
-
-        ! Population 9: 
-        vid = 9
-        this%YZslice = this%f(nx,:,:,vid)
-        this%XYslice = this%f(:,:,nz,vid)
-        this%f(2:nx,:,2:nz,vid) = this%f(1:nx-1,:,1:nz-1,vid)
-        this%f(1,:,1,vid) = this%XYslice(nx,:)
-        this%f(2:nx,:,1,vid) = this%XYslice(1:nx-1,:)
-        this%f(1,:,2:nz,vid) = this%YZslice(:,1:nz-1)
-
-        ! Population 10: 
-        vid = 10
-        this%YZslice = this%f(1,:,:,vid)
-        this%XYslice = this%f(:,:,1,vid)
-        this%f(1:nx-1,:,1:nz-1,vid) = this%f(2:nx,:,2:nz,vid)
-        this%f(nx,:,nz,vid) = this%XYslice(1,:)
-        this%f(1:nx-1,:,nz,vid) = this%XYslice(2:nx,:)
-        this%f(nx,:,1:nz-1,vid) = this%YZslice(:,2:nz)
-
-        ! Population 11: 
-        vid = 11
-        this%XZslice = this%f(:,ny,:,vid)
-        this%XYslice = this%f(:,:,nz,vid)
-        this%f(:,2:ny,2:nz,vid) = this%f(:,1:ny-1,1:nz-1,vid)
-        this%f(:,1,1,vid) = this%XYslice(:,ny)
-        this%f(:,2:ny,1,vid) = this%XYslice(:,1:ny-1)
-        this%f(:,1,2:nz,vid) = this%XZslice(:,1:nz-1)
-
-        ! Population 12: 
-        vid = 12
-        this%XZslice = this%f(:,1,:,vid)
-        this%XYslice = this%f(:,:,1,vid)
-        this%f(:,1:ny-1,1:nz-1,vid) = this%f(:,2:nx,2:nz,vid)
-        this%f(:,nx,nz,vid) = this%XYslice(:,1)
-        this%f(:,1:ny-1,nz,vid) = this%XYslice(:,2:nx)
-        this%f(:,ny,1:nz-1,vid) = this%XZslice(:,2:nz)
-
-        ! Population 13: 
-        vid = 13
-        this%YZslice = this%f(nx,:,:,vid)
-        this%XZslice = this%f(:,1,:,vid)
-        this%f(2:nx,1:ny-1,:,vid) = this%f(1:nx-1,2:ny,:,vid)
-        this%f(1,ny,:,vid) = this%XZslice(nx,:)
-        this%f(2:nx,ny,:,vid) = this%XZslice(1:nx-1,:)
-        this%f(1,1:ny-1,:,vid) = this%YZslice(2:ny,:)
-
-        ! Population 14: 
-        vid = 14
-        this%YZslice = this%f(1,:,:,vid)
-        this%XZslice = this%f(:,ny,:,vid)
-        this%f(1:nx-1,2:ny,:,vid) = this%f(2:nx,1:ny-1,:,vid)
-        this%f(nx,1,:,vid) = this%XZslice(1,:)
-        this%f(1:nx-1,1,:,vid) = this%XZslice(2:nx,:)
-        this%f(nx,2:ny,:,vid) = this%YZslice(1:ny-1,:)
-
-        ! Population 15:
-        vid = 15
-        this%YZslice = this%f(nx,:,:,vid)
-        this%XYslice = this%f(:,:,1,vid)
-        this%f(2:nx,:,1:nz-1,vid) = this%f(1:nx-1,:,2:nz,vid)
-        this%f(1,:,nz,vid) = this%YZslice(:,1)
-        this%f(2:nx,:,nz,vid) = this%XYslice(1:nx-1,:)
-        this%f(1,:,1:nz-1,vid) = this%YZslice(:,2:nz) 
-
-        ! Population 16:
-        vid = 16
-        this%YZslice = this%f(1,:,:,vid)
-        this%XYslice = this%f(:,:,nz,vid)
-        this%f(1:nx-1,:,2:nz,vid) = this%f(2:nx,:,1:nz-1,vid)
-        this%f(nx,:,1,vid) = this%XYslice(1,:)
-        this%f(1:nx-1,:,1,vid) = this%XYslice(2:nx,:)
-        this%f(nx,:,2:nz,vid) = this%YZslice(:,1:nz-1) 
-
-        ! Population 17:
-        vid = 17
-        this%XZslice = this%f(:,ny,:,vid)
-        this%XYslice = this%f(:,:,1,vid)
-        this%f(:,2:ny,1:nz-1,vid) = this%f(:,1:ny-1,2:nz,vid)
-        this%f(:,1,nz,vid) = this%XZslice(:,1)
-        this%f(:,2:ny,nz,vid) = this%XYslice(:,1:ny-1)
-        this%f(:,1,1:nz-1,vid) = this%XZslice(:,2:nz)
-
-        ! Population 18:
-        vid = 18
-        this%XZslice = this%f(:,1,:,vid)
-        this%XYslice = this%f(:,:,nz,vid)
-        this%f(:,1:ny-1,2:nz,vid) = this%f(:,2:ny,1:nz-1,vid)
-        this%f(:,ny,1,vid) = this%XYslice(:,1)
-        this%f(:,1:ny-1,1,vid) = this%XYslice(:,2:ny)
-        this%f(:,ny,2:nz,vid) = this%XZslice(:,1:nz-1)
-
-        ! Population 19:
-        ! Nothing to do here. 
-
-    end subroutine 
-
-
-    subroutine compute_feq(this)
-        class(d3q19), intent(inout) :: this 
-        integer :: i, j, k, idx 
-
-
-        if (this%useBodyForce) then
-            do idx = 1,nvels
-                do k = 1,this%gp%xsz(3)
-                    do j = 1,this%gp%xsz(2)
-                        !$omp simd
-                        do i = 1,this%gp%xsz(1)
-                            call get_Feq_2ndOrder(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
-                                    & this%rho(i,j,k),idx,this%Qtensor(:,:,idx),this%feq(i,j,k,idx))
-                            
-                            call get_ForceSource_2ndOrder(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
-                                    & this%Fx(i,j,k), this%Fy(i,j,k), this%Fz(i,j,k), idx, &
-                                    & this%Qtensor(:,:,idx),this%Force(i,j,k,idx))
-                        end do 
-                    end do 
-                end do 
-            end do
-        else
-            do idx = 1,nvels
-                do k = 1,this%gp%xsz(3)
-                    do j = 1,this%gp%xsz(2)
-                        !$omp simd
-                        do i = 1,this%gp%xsz(1)
-                            call get_Feq_2ndOrder(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
-                                    & this%rho(i,j,k),idx,this%Qtensor(:,:,idx),this%feq(i,j,k,idx))
-                        end do 
-                    end do 
-                end do 
-            end do
-        end if 
-
-    end subroutine 
 
     pure subroutine get_Feq_2ndOrder(ux,uy,uz,rho,fidx,Qtensor,feq)
         real(rkind), intent(in) :: ux, uy, uz, rho
@@ -370,10 +204,10 @@ contains
         class(d3q19), intent(inout) :: this
         integer :: i, j, k, onebyrho
 
-        do k = 1,this%gp%xsz(3)
-            do j = 1,this%gp%xsz(2)
+        do k = 1,this%gp%zsz(3)
+            do j = 1,this%gp%zsz(2)
                 !$omp simd
-                do i = 1,this%gp%xsz(1)
+                do i = 1,this%gp%zsz(1)
                     this%rho(i,j,k) = this%f(i,j,k,1 ) + this%f(i,j,k,2 ) + this%f(i,j,k,3 ) + this%f(i,j,k,4 ) &
                                  &  + this%f(i,j,k,5 ) + this%f(i,j,k,6 ) + this%f(i,j,k,7 ) + this%f(i,j,k,8 ) &
                                  &  + this%f(i,j,k,9 ) + this%f(i,j,k,10) + this%f(i,j,k,11) + this%f(i,j,k,12) &
