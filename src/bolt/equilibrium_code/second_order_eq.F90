@@ -28,7 +28,7 @@
         second = (Qtensor(1,1)*ux + Qtensor(1,2)*uy + Qtensor(1,3)*uz)*ForceX &
                + (Qtensor(2,1)*ux + Qtensor(2,2)*uy + Qtensor(2,3)*uz)*ForceY &
                + (Qtensor(3,1)*ux + Qtensor(3,2)*uy + Qtensor(3,3)*uz)*ForceZ
-        
+       
         Fsource = w(fidx)*(onebycsq*first + oneby2c4*second)
 
     end subroutine 

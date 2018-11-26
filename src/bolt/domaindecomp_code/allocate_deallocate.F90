@@ -21,10 +21,6 @@
         allocate(this%z1d_send(this%gp%zsz(3)))
         allocate(this%z1d_recv(this%gp%zsz(3)))
 
-        this%Fx = zero
-        this%Fy = zero
-        this%Fz = zero
-
         if (.not. this%isZperiodic) then
             allocate(this%uTop(this%gp%zsz(1),this%gp%zsz(2)))
             allocate(this%vTop(this%gp%zsz(1),this%gp%zsz(2)))
@@ -35,10 +31,10 @@
             allocate(this%wBot(this%gp%zsz(1),this%gp%zsz(2)))
             
             allocate(this%rhoBC(this%gp%zsz(1),this%gp%zsz(2)))
-            allocate(this%PiBC(this%gp%zsz(1),this%gp%zsz(2),6))
+            allocate(this%PiBC(this%gp%zsz(1),this%gp%zsz(2),3,3))
         
-            allocate(this%feqBC (this%gp%zsz(1),this%gp%zsz(2),9))
-            allocate(this%fneqBC(this%gp%zsz(1),this%gp%zsz(2),9))
+            allocate(this%feqBC (this%gp%zsz(1),this%gp%zsz(2),nvels))
+            allocate(this%fneqBC(this%gp%zsz(1),this%gp%zsz(2),nvels))
             
         end if 
     end subroutine 

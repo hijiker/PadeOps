@@ -48,7 +48,6 @@ module d3q19mod
         real(rkind) :: Fx = zero, Fy = zero, Fz = zero 
         real(rkind), dimension(:,:,:), allocatable :: OneByTau, OneByTwoTau
         real(rkind), dimension(3,3,nvels) :: QTensor
-        real(rkind), dimension(:,:,:), allocatable :: PiTensor
 
         logical :: useRestart = .false., useConstantBodyForce, isZPeriodic = .true., useSmagorinsky=.false.
 
@@ -58,7 +57,8 @@ module d3q19mod
 
         ! Boundary condition data
         real(rkind), dimension(:,:), allocatable :: rhoBC, uTop, vTop, wTop, uBot, vBot, wBot
-        real(rkind), dimension(:,:,:), allocatable :: feqBC, fneqBC, PiBC
+        real(rkind), dimension(:,:,:), allocatable :: feqBC, fneqBC
+        real(rkind), dimension(:,:,:,:), allocatable :: PiBC
 
         ! Streaming data arrays
         real(rkind), dimension(:,:), allocatable :: YZslice, XZslice, XYslice
