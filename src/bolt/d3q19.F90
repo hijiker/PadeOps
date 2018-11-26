@@ -118,8 +118,11 @@ contains
         class(d3q19), intent(inout) :: this
 
         call this%collide()
+        
         call this%stream()   ! Look at "d3q19_codes/d3q19_streaming.F90"
+        
         call this%updateBCs()
+        
         call this%wrapup_timestep()
 
     end subroutine 

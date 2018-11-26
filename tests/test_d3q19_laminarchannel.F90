@@ -13,7 +13,7 @@ program test_d3q19_laminarchannel
 
     type(d3q19) :: lattice 
     integer :: ierr
-    integer :: nx = 256, ny = 256, nz = 256
+    integer :: nx = 1, ny = 1, nz = 60
     real(rkind) :: Tstop = 100._rkind
     real(rkind) :: tmp, accum
 
@@ -25,8 +25,8 @@ program test_d3q19_laminarchannel
     lattice%ny = ny
     lattice%nz = nz
 
-    lattice%delta_x = two/(nz-1)
-    lattice%delta_t = 0.1_rkind*lattice%delta_x
+    lattice%delta_x = two/real(nz-1,rkind)
+    lattice%delta_t = 0.005_rkind*lattice%delta_x
     lattice%Re = Reynolds_number
     lattice%Fx = Force
     
@@ -35,9 +35,9 @@ program test_d3q19_laminarchannel
     call lattice%init(testing=.true.)
 
     call tic()
-    !do while (lattice%GetPhysTime()<Tstop)
-      call lattice%time_advance()
-    !end do 
+    do while (lattice%GetPhysTime()<Tstop)
+     call lattice%time_advance()
+    end do 
     call toc()
 
     accum = p_maxval(abs(lattice%ux*lattice%delta_u - utrue) &
@@ -51,7 +51,7 @@ program test_d3q19_laminarchannel
         call message(1,"TEST PASSED.")
     end if 
 
-    !print*, lattice%ux(1,1,:)*lattice%delta_u
+    print*, lattice%ux(1,1,:)*lattice%delta_u
     call lattice%destroy()
 
     call MPI_Finalize(ierr)

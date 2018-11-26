@@ -16,7 +16,7 @@
                                 & this%Qtensor(:,:,idx), Force)
                         
                         oneByTau = one/this%tau(i,j,k)
-                        
+                       
                         this%f(i,j,k,idx) = (one - oneByTau)*this%f(i,j,k,idx) + oneByTau*feq &
                                         & + (one - half*oneBytau)*Force
                     end do 
@@ -45,7 +45,6 @@
                                 & this%Qtensor(:,:,idx), Force)
                         
                         oneByTau = one/this%tau(i,j,k)
-                        
                         this%f(i,j,k,idx) = (one - oneByTau)*this%f(i,j,k,idx) + oneByTau*feq
                     end do 
                 end do 

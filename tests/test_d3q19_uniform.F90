@@ -28,6 +28,9 @@ program test_d3q19_uniform
     lattice%delta_t = one
     lattice%Re = ten 
 
+    lattice%isZPeriodic = .true. 
+    lattice%useConstantBodyForce = .false. 
+
     call lattice%init(testing=.true.)
 
     call lattice%time_advance()

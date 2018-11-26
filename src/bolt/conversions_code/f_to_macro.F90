@@ -1,7 +1,8 @@
     subroutine compute_macroscopic(this)
         use constants, only: half
         class(d3q19), intent(inout) :: this
-        integer :: i, j, k, onebyrho
+        integer :: i, j, k
+        real(rkind) :: onebyrho
 
         do k = 1,this%gp%zsz(3)
             do j = 1,this%gp%zsz(2)
@@ -13,14 +14,6 @@
                                  &  + this%f(i,j,k,13) + this%f(i,j,k,14) + this%f(i,j,k,15) + this%f(i,j,k,16) &
                                  &  + this%f(i,j,k,17) + this%f(i,j,k,18) + this%f(i,j,k,19)
 
-                    if (abs(this%rho(i,j,k)) < 1.D-10) then
-                        print*, "i,j,k:", i, j, k
-                        print*, "F:" 
-                        print*, this%f(i,j,k,:)
-                        print*, "RHO:"
-                        print*, this%rho(i,j,k)
-                        print*, this%step
-                    end if 
                     onebyrho = one/(this%rho(i,j,k))
 
                     this%ux(i,j,k)  = (this%f(i,j,k,1 ) - this%f(i,j,k,2 ) + this%f(i,j,k,7 ) - this%f(i,j,k,8 ) &
