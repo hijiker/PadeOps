@@ -1,15 +1,17 @@
+#include "test_bolt_files/d3q19_hooks.F90"       
+
 program test_d3q19_streaming
     use d3q19mod, only: d3q19,test_lattice_definition
     use kind_parameters, only: rkind
     use mpi
     use reductions, only: p_sum
     use exits, only: message
-    
+    use constants, only: one, ten
+
     implicit none
 
     type(d3q19) :: lattice 
     integer :: i, j, k, ierr, ii, jj, kk, vid
-    character(len=4) :: inputfile = "blah" ! temporary 
     integer :: nx = 32, ny = 24, nz = 16
     real(rkind), dimension(19) :: trueSum
 
@@ -17,13 +19,15 @@ program test_d3q19_streaming
 
     call MPI_Init(ierr)               !<-- Begin MPI
     
-    !call test_lattice_definition()
-   
     lattice%nx = nx
     lattice%ny = ny
     lattice%nz = nz
 
-    call lattice%init(inputfile)
+    lattice%delta_x = one
+    lattice%delta_t = one
+    lattice%Re = ten 
+
+    call lattice%init(testing=.true.)
 
     kk =  1
     do k = lattice%gp%zst(3),lattice%gp%zen(3)
@@ -66,4 +70,8 @@ program test_d3q19_streaming
     else
         call message(0,"TEST PASSED.")
     end if 
+
+    call lattice%destroy()
+
+    call MPI_Finalize(ierr)
 end program 

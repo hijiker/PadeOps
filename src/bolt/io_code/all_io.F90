@@ -1,0 +1,108 @@
+subroutine read_inputfile(this, inputfile)
+        class(d3q19), intent(inout) :: this
+        character(len=*), intent(in) :: inputfile 
+
+        integer :: nx, ny, nz, CollisionModel=0, restart_runID, restart_timeID, runID
+        integer :: tid_vis, tid_restart, ierr
+        character(len=clen) :: inputdir, outputdir
+        logical ::  isZPeriodic, useConstantBodyForce, useSmagorinsky=.false., restartSimulation=.false. 
+        real(rkind) :: Re = 10.d0, delta_t = 0.1d0, delta_x = 0.2d0, Fx = zero, Fy = zero, Fz = zero
+
+        namelist /INPUT/ nx, ny, nz, restartSimulation, restart_runID, restart_timeID
+        namelist /PHYSICS/ CollisionModel, useConstantBodyForce, useSmagorinsky, isZperiodic, Re, delta_x, delta_t, Fx, Fy, Fz
+        namelist /IO/ inputdir, outputdir, RunID, tid_vis, tid_restart 
+
+        open(unit=123, file=trim(inputfile), form='FORMATTED', iostat=ierr)
+        read(unit=123, NML=INPUT)
+        read(unit=123, NML=IO)
+        close(123)
+
+        this%CollisionModel = CollisionModel
+        this%useSmagorinsky = useSmagorinsky
+        this%isZPeriodic = isZPeriodic         
+        this%inputdir = inputdir
+        this%outputdir = outputdir
+        this%useRestart = restartSimulation
+        this%Re = Re
+        this%useConstantBodyForce = useConstantBodyForce 
+        this%restart_runID = restart_runID
+        this%restart_timeID = restart_timeID
+
+        this%nx = nx
+        this%ny = ny
+        this%nz = nz
+     
+        this%Fx = Fx
+        this%Fy = Fy
+        this%Fz = Fz
+
+        this%delta_x = delta_x
+        this%delta_t = delta_t
+
+        this%RunID = RunID
+        this%tid_vis = tid_vis
+        this%tid_restart = tid_restart
+
+end subroutine
+
+
+subroutine dumpVisBuff(this,label)
+    use decomp_2d_io
+    class(d3q19), intent(in) :: this
+    character(len=clen) :: tempname, fname
+    character(len=4), intent(in) :: label
+
+     write(tempname,"(A3,I2.2,A1,A4,A2,I6.6,A4)") "Run",this%runID, "_",label,"_t",this%step,".out"
+     fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
+     call decomp_2d_write_one(3,this%VisBuff,fname,this%gp)
+
+end subroutine
+
+
+subroutine dumpVisualizationFields(this)
+    class(d3q19), intent(inout) :: this
+    
+    this%visBuff = this%rho   
+    call this%dumpVisBuff("rhoF")
+    
+    this%visBuff = this%ux*this%delta_u   
+    call this%dumpVisBuff("uVel")
+    
+    this%visBuff = this%uy*this%delta_u   
+    call this%dumpVisBuff("vVel")
+    
+    this%visBuff = this%uz*this%delta_u   
+    call this%dumpVisBuff("wVel")
+
+end subroutine 
+
+subroutine dumpRestart(this)
+    use decomp_2d_io
+    class(d3q19), intent(in) :: this
+    character(len=clen) :: tempname, fname
+    integer :: vid
+
+    do vid = 1,nvels
+        write(tempname,"(A7,A4,I2.2,A2,I3.3,A1,I6.6)") "RESTART", "_Run",this%runID, "_f",vid,".",this%step
+        fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
+        call decomp_2d_write_one(3,this%f(:,:,:,vid),fname, this%gp)
+    end do 
+
+end subroutine
+
+
+subroutine readRestart(this)
+    use decomp_2d_io
+    class(d3q19), intent(inout) :: this
+    character(len=clen) :: tempname, fname
+    integer :: vid
+
+    do vid = 1,nvels
+        write(tempname,"(A7,A4,I2.2,A2,I3.3,A1,I6.6)") "RESTART", "_Run",this%restart_runID, "_f",vid,".",this%restart_timeID
+        fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
+        call decomp_2d_read_one(3,this%f(:,:,:,vid),fname, this%gp)
+    end do 
+
+    this%step = this%restart_timeID
+
+end subroutine 
