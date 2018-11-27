@@ -13,8 +13,8 @@ program test_d3q19_laminarchannel
 
     type(d3q19) :: lattice 
     integer :: ierr
-    integer :: nx = 1, ny = 1, nz = 60
-    real(rkind) :: Tstop = 100._rkind
+    integer :: nx = 1, ny = 1, nz = 20
+    real(rkind) :: Tstop = 50._rkind
     real(rkind) :: tmp, accum
 
     call MPI_Init(ierr)               
@@ -26,32 +26,27 @@ program test_d3q19_laminarchannel
     lattice%nz = nz
 
     lattice%delta_x = two/real(nz-1,rkind)
-    lattice%delta_t = 0.005_rkind*lattice%delta_x
+    lattice%delta_t = 0.25_rkind*lattice%delta_x
     lattice%Re = Reynolds_number
-    lattice%Fx = Force
-    
+   
     lattice%isZPeriodic = .false. 
-
+    lattice%useConstantBodyForce = .true.
+    lattice%Fx = Force
     call lattice%init(testing=.true.)
 
-    call tic()
     do while (lattice%GetPhysTime()<Tstop)
-     call lattice%time_advance()
+        call lattice%time_advance()
     end do 
-    call toc()
 
     accum = p_maxval(abs(lattice%ux*lattice%delta_u - utrue) &
           & + abs(lattice%uy*lattice%delta_u - vtrue) + abs(lattice%uz*lattice%delta_u - wtrue))
 
-    !call message(0,"ERROR ACCUMULATED:", accum)
-    !print*, lattice%step
-    if (accum > 1.d-13) then
+    if (accum > 1.d-1) then
         call message(1,"TEST FAILED.")
     else
         call message(1,"TEST PASSED.")
     end if 
 
-    print*, lattice%ux(1,1,:)*lattice%delta_u
     call lattice%destroy()
 
     call MPI_Finalize(ierr)

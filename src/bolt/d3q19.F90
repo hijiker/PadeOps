@@ -49,7 +49,7 @@ module d3q19mod
         real(rkind), dimension(:,:,:), allocatable :: OneByTau, OneByTwoTau
         real(rkind), dimension(3,3,nvels) :: QTensor
 
-        logical :: useRestart = .false., useConstantBodyForce, isZPeriodic = .true., useSmagorinsky=.false.
+        logical :: useRestart = .false., useConstantBodyForce = .false., isZPeriodic = .true., useSmagorinsky=.false.
 
         integer :: CollisionModel, restart_RunID, restart_timeID, RunID, tid_vis=10000, tid_restart=10000
 
@@ -97,22 +97,21 @@ module d3q19mod
 
 contains
 
+! GENERIC PROCEDURES (FOR AN ARBITRARY LATTICE)
 #include "domaindecomp_code/Decompose_LBM_z.F90"
 #include "domaindecomp_code/allocate_deallocate.F90"
-
 #include "equilibrium_code/second_order_eq.F90"
 #include "testing_code/test_lattice_def.F90"
 #include "io_code/all_io.F90"
-
 #include "collision_code/BGK.F90"
-
 #include "conversions_code/f_to_macro.F90"
 #include "conversions_code/macro_to_feq.F90"
+#include "BC_code/NEQ_BB_reg.F90"
 
+! D3Q19 SPECIFIC PROCEDURES
 #include "d3q19_codes/d3q19_streaming.F90"
 #include "d3q19_codes/d3q19_init.F90"
 
-#include "BC_code/NEQ_BB_reg.F90"
 
     subroutine time_advance(this)
         class(d3q19), intent(inout) :: this

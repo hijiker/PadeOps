@@ -35,32 +35,21 @@
                     this%PiBC(i,j,1,2) = this%PiBC(i,j,1,2) + cx(vid)*cy(vid)*this%fneqBC(i,j,vid)
                     this%PiBC(i,j,1,3) = this%PiBC(i,j,1,3) + cx(vid)*cz(vid)*this%fneqBC(i,j,vid)
                     
-                    !this%PiBC(i,j,2,1) = this%PiBC(i,j,2,1) + cy(vid)*cx(vid)*this%fneqBC(i,j,vid)
                     this%PiBC(i,j,2,2) = this%PiBC(i,j,2,2) + cy(vid)*cy(vid)*this%fneqBC(i,j,vid)
                     this%PiBC(i,j,2,3) = this%PiBC(i,j,2,3) + cy(vid)*cz(vid)*this%fneqBC(i,j,vid)
                     
-                    !this%PiBC(i,j,3,1) = this%PiBC(i,j,3,1) + cz(vid)*cx(vid)*this%fneqBC(i,j,vid)
-                    !this%PiBC(i,j,3,2) = this%PiBC(i,j,3,2) + cz(vid)*cy(vid)*this%fneqBC(i,j,vid)
                     this%PiBC(i,j,3,3) = this%PiBC(i,j,3,3) + cz(vid)*cz(vid)*this%fneqBC(i,j,vid)
                 end do 
             end do 
         end do 
 
         do vid = 1,nvels
-            !this%fneqBC(:,:,vid) = (w(vid)*oneby2c4)*(this%PiBC(:,:,1,1)*this%Qtensor(1,1,vid) &
-            !                     & + this%PiBC(:,:,1,2)*this%Qtensor(1,2,vid) + this%PiBC(:,:,1,3)*this%Qtensor(1,3,vid) & 
-            !                     & + this%PiBC(:,:,2,1)*this%Qtensor(2,1,vid) + this%PiBC(:,:,2,2)*this%Qtensor(2,2,vid) & 
-            !                     & + this%PiBC(:,:,2,3)*this%Qtensor(2,3,vid) + this%PiBC(:,:,3,1)*this%Qtensor(3,1,vid) & 
-            !                     & + this%PiBC(:,:,3,2)*this%Qtensor(3,2,vid) + this%PiBC(:,:,3,3)*this%Qtensor(3,3,vid))& 
-            !                     & - (w(vid)*half*onebycsq)*(cx(vid)*this%Fx + cy(vid)*this%Fy + cz(vid)*this%Fz)
-            
             this%fneqBC(:,:,vid) = (w(vid)*oneby2c4)*(this%PiBC(:,:,1,1)*this%Qtensor(1,1,vid) &
-                                 & + two*this%PiBC(:,:,1,2)*this%Qtensor(1,2,vid) + two*this%PiBC(:,:,1,3)*this%Qtensor(1,3,vid) & 
-                                 & + this%PiBC(:,:,2,2)*this%Qtensor(2,2,vid) + two*this%PiBC(:,:,2,3)*this%Qtensor(2,3,vid) & 
-                                 & + this%PiBC(:,:,3,3)*this%Qtensor(3,3,vid))& 
-                                 & - (w(vid)*half*onebycsq)*(cx(vid)*this%Fx + cy(vid)*this%Fy + cz(vid)*this%Fz)
+                               & + two*this%PiBC(:,:,1,2)*this%Qtensor(1,2,vid) + two*this%PiBC(:,:,1,3)*this%Qtensor(1,3,vid) & 
+                               & + this%PiBC(:,:,2,2)*this%Qtensor(2,2,vid) + two*this%PiBC(:,:,2,3)*this%Qtensor(2,3,vid) & 
+                               & + this%PiBC(:,:,3,3)*this%Qtensor(3,3,vid))& 
+                               & - (w(vid)*half*onebycsq)*(cx(vid)*this%Fx + cy(vid)*this%Fy + cz(vid)*this%Fz)
         end do 
-
 
     end subroutine
 
