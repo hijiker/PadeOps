@@ -78,6 +78,7 @@ module d3q19mod
 
             procedure :: dumpVisualizationFields
             procedure :: wrapup_timestep
+            procedure :: update_bodyForce
 
             procedure, private :: collision_BGK 
             procedure, private :: collision_BGK_Force 
@@ -180,4 +181,11 @@ contains
 
     end subroutine 
    
+    subroutine update_bodyForce(this,ForceX)
+        class(d3q19), intent(inout) :: this
+        real(rkind), intent(in) :: ForceX
+
+        this%Fx = ForceX*this%delta_t/this%delta_u
+
+    end subroutine 
 end module 

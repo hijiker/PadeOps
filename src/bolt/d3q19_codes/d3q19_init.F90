@@ -59,6 +59,7 @@
             this%uy = this%uy/this%delta_u 
             this%uz = this%uz/this%delta_u 
             call this%initialize_f_to_feq()
+            this%step = 0
         end if 
 
         call message(0, "D3Q19 lattice initialized.")
