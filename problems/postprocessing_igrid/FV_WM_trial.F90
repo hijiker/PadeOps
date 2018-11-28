@@ -5,7 +5,7 @@ module NS_1d_rhs
     implicit none
 
     real(rkind), parameter :: dz_match = 0.10d0 !50.d0/1000.d0
-    integer, parameter :: nz = 40
+    integer, parameter :: nz = 100
     real(rkind), dimension(:), allocatable :: nu_t, z
     real(rkind) :: umatch = 0.d0 !14.8439612264d0
 
@@ -60,7 +60,7 @@ contains
 
         ! STEP 1: Get ustar
         ustarnew = find_utau(ustar, u(1,1,2), dz)
-        ustar = ustarnew 
+        ustar = 1.d0 !ustarnew 
 
         ! STEP 2: Get dudz
         call der%InterpZ_E2C(u,tmpC1,1,1)
