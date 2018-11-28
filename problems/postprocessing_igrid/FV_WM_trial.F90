@@ -79,7 +79,7 @@ contains
         call der%InterpZ_E2C(tmpE,tmpC1,1,1)
         
         ! STEP 6: Interpolate derivative
-        call der%InterpZ_E2C(dudz,tmpC2,1,1)
+        call der%ddz_E2C(u,tmpC2,1,1)
 
         ! STEP 7: Compute stress
         tmpC2 = tmpC2*tmpC1
@@ -90,6 +90,9 @@ contains
         ! STEP 9: Add body force
         rhs = rhs + F
 
+        ! STEP 10: 
+        u(1,1,1) = zero
+        u(1,1,nz+1) = zero
 
     end subroutine 
 
