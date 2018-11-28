@@ -5,7 +5,7 @@ module NS_1d_rhs
     implicit none
 
     real(rkind), parameter :: dz_match = 0.10d0 !50.d0/1000.d0
-    integer, parameter :: nz = 9
+    integer, parameter :: nz = 40
     real(rkind), dimension(:), allocatable :: nu_t, z
     real(rkind) :: umatch = 0.d0 !14.8439612264d0
 
@@ -46,6 +46,7 @@ contains
 
 
     subroutine get_RHS(nz, u, rhs, dudz, F, nu_t, tmpC1, tmpC2, tmpE)
+        use constants, only: zero 
         integer, intent(in) :: nz
         real(rkind), intent(in) :: F
         real(rkind), intent(in) , dimension(1,1,nz+1) :: u
@@ -91,8 +92,8 @@ contains
         rhs = rhs + F
 
         ! STEP 10: 
-        u(1,1,1) = zero
-        u(1,1,nz+1) = zero
+        rhs(1,1,1) = zero
+        rhs(1,1,nz+1) = zero
 
     end subroutine 
 
