@@ -13,12 +13,13 @@ program test_d3q19_womersley
 
     type(d3q19) :: lattice 
     integer :: ierr
-    integer :: nx = 1, ny = 1, nz = 160
-    real(rkind) :: Tstop = 5000._rkind
+    integer :: nx = 1, ny = 1, nz = 80
+    real(rkind) :: Tstop = 10._rkind
     real(rkind) :: tmp, accum
-    real(rkind) :: beta_t = 0.1_rkind
+    real(rkind) :: beta_t = 0.2_rkind
     real(rkind) :: ForceX
     real(rkind) :: umax_expect 
+    integer :: stop_step = 1250
 
     call MPI_Init(ierr)               
     
@@ -47,7 +48,8 @@ program test_d3q19_womersley
     call message(1, "delta_x:",lattice%delta_x)
     call message(1, "delta_t:",lattice%delta_t)
    
-    do while (lattice%GetPhysTime()<Tstop)
+    !do while (lattice%GetPhysTime()<Tstop)
+    do while (lattice%step<stop_step)
         ForceX = p0*cos(omega*lattice%GetPhysTime())
         call lattice%update_bodyForce(ForceX)
         call lattice%time_advance()
@@ -63,10 +65,15 @@ program test_d3q19_womersley
         end if 
     end do 
 
+    call update_utrue_wormersley(lattice%GetPhysTime())
     accum = p_maxval(abs(lattice%ux*lattice%delta_u - utrue) &
           & + abs(lattice%uy*lattice%delta_u - vtrue) + abs(lattice%uz*lattice%delta_u - wtrue))
 
-    
+   
+    call message("SUMMARY:")
+    call message(1,"Time:",lattice%GetPhysTime()) 
+    call message(1,"Steps:",lattice%step) 
+    call message(1,"Error:",accum) 
     if (accum > 1.d-1) then
         call message(1,"TEST FAILED.")
     else
