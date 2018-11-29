@@ -154,3 +154,25 @@ subroutine getWallBC_bolt(decomp, ux, uy, uz, uxB, uyB, uzB, uxT, uyT, uzT)
     uzT = wtrue(:,:,nz)
 
 end subroutine 
+
+
+subroutine getWall_nut(decomp,ux, uy, uz, Re, tau_B, tau_T)
+    use kind_parameters, only:  rkind, clen
+    use decomp_2d, only: decomp_info
+    use constants, only: zero
+    use d3q19_testing
+    implicit none
+
+    type(decomp_info), intent(in) :: decomp
+    real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
+    real(rkind), intent(in) :: Re
+    real(rkind), dimension(:,:), intent(out) :: tau_B, tau_T 
+    integer :: nz
+
+    nz = size(ux,3)
+
+    tau_B = zero
+    tau_T = zero
+
+end subroutine 
+

@@ -38,6 +38,8 @@ program test_d3q19_laminarchannel
     lattice%isZPeriodic = .false. 
     lattice%useConstantBodyForce = .true.
     lattice%Fx = Force
+    lattice%CollisionModel = 0
+
     call lattice%init(testing=.true.)
 
     call message(0, "Lattice details:")
@@ -60,7 +62,14 @@ program test_d3q19_laminarchannel
     accum = p_maxval(abs(lattice%ux*lattice%delta_u - utrue) &
           & + abs(lattice%uy*lattice%delta_u - vtrue) + abs(lattice%uz*lattice%delta_u - wtrue))
 
-    
+    call lattice%compute_pi()
+
+    call message("SUMMARY:")
+    call message(1,"Time:",lattice%getPhysTime())
+    call message(1,"Error:", accum)
+
+    !print*, (one/lattice%delta_t)*lattice%Pitensor(3,1,1,:)/(lattice%tau(1,1,:)*(one/3.d0)*lattice%rho(1,1,:))
+
     if (accum > 1.7d-1) then
         call message(1,"TEST FAILED.")
     else

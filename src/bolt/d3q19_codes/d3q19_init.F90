@@ -49,6 +49,9 @@
         this%Fy = this%Fy*this%delta_t/this%delta_u
         this%Fz = this%Fz*this%delta_t/this%delta_u
 
+        allocate(this%buff1(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        allocate(this%buff2(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        allocate(this%PiTensor(6,this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
 
         if (this%useRestart) then
             call this%readRestart()   

@@ -26,4 +26,15 @@ module bolt_hooks
         end subroutine 
     end interface
 
+    interface getWall_nut
+        subroutine getWall_nut(decomp,ux, uy, uz, Re, tau_B, tau_T)
+            import :: rkind
+            import :: decomp_info
+            type(decomp_info), intent(in) :: decomp
+            real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
+            real(rkind), intent(in) :: Re
+            real(rkind), dimension(:,:), intent(out) :: tau_B, tau_T
+
+        end subroutine 
+    end interface 
 end module 
