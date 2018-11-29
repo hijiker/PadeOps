@@ -32,6 +32,9 @@ module d3q19mod
     integer, dimension(5), parameter :: fplus     = [5,9,11,16,18]
     integer, dimension(5), parameter :: fminus    = [6,10,12,15,17]
 
+    real(rkind), parameter :: C_smag = 0.16_rkind 
+    real(rkind), parameter :: C_smag_sq = C_smag*C_smag
+
     type :: d3q19
 
         type(decomp_info), public :: gp
@@ -44,8 +47,8 @@ module d3q19mod
         real(rkind) :: delta_t, delta_x, delta_u, delta_nu
         real(rkind) :: Re
 
-        real(rkind), dimension(:,:,:), allocatable :: rho, ux, uy, uz, nu, tau, VisBuff
-        real(rkind) :: Fx = zero, Fy = zero, Fz = zero 
+        real(rkind), dimension(:,:,:), allocatable :: rho, ux, uy, uz,  tau, VisBuff
+        real(rkind) :: Fx = zero, Fy = zero, Fz = zero , nu
         real(rkind), dimension(:,:,:), allocatable :: OneByTau, OneByTwoTau
         real(rkind), dimension(3,3,nvels) :: QTensor
 
@@ -55,10 +58,15 @@ module d3q19mod
 
         integer :: step 
 
+        logical :: useSGSmodel = .false. 
+
         ! Boundary condition data
         real(rkind), dimension(:,:), allocatable :: rhoBC, uTop, vTop, wTop, uBot, vBot, wBot
+        real(rkind), dimension(:,:), allocatable :: tau_T, tau_B
         real(rkind), dimension(:,:,:), allocatable :: feqBC, fneqBC
         real(rkind), dimension(:,:,:,:), allocatable :: PiBC
+        real(rkind), dimension(:,:,:,:), allocatable :: PiTensor
+        real(rkind), dimension(:,:,:), allocatable :: buff1, buff2
 
         ! Streaming data arrays
         real(rkind), dimension(:,:), allocatable :: YZslice, XZslice, XYslice
@@ -76,12 +84,15 @@ module d3q19mod
             procedure :: updateBCs
             procedure :: GetPhysTime
 
+            procedure :: compute_Pi
             procedure :: dumpVisualizationFields
             procedure :: wrapup_timestep
             procedure :: update_bodyForce
 
+            procedure, private :: compute_tau_smag
             procedure, private :: collision_BGK 
             procedure, private :: collision_BGK_Force 
+            procedure, private :: RegBGK_Force 
             procedure, private :: NEQ_BB_Reg
             procedure, private :: compute_rhoBC
             procedure, private :: RegularizeFneq_BC
@@ -105,14 +116,15 @@ contains
 #include "testing_code/test_lattice_def.F90"
 #include "io_code/all_io.F90"
 #include "collision_code/BGK.F90"
+#include "collision_code/RegBGK.F90"
 #include "conversions_code/f_to_macro.F90"
 #include "conversions_code/macro_to_feq.F90"
 #include "BC_code/NEQ_BB_reg.F90"
+#include "SGS_code/Smag.F90"
 
 ! D3Q19 SPECIFIC PROCEDURES
 #include "d3q19_codes/d3q19_streaming.F90"
 #include "d3q19_codes/d3q19_init.F90"
-
 
     subroutine time_advance(this)
         class(d3q19), intent(inout) :: this
@@ -163,6 +175,9 @@ contains
             call this%dumpRestart()
         end if 
 
+        if (this%useSGSmodel) then
+            call this%compute_tau_smag()
+        end if 
     end subroutine 
 
     subroutine collide(this)
@@ -175,6 +190,8 @@ contains
             else
                 call this%collision_BGK()
             end if 
+        case (1) ! Reg. BGK
+            call this%RegBGK_Force()
         case default
             call this%collision_BGK_Force()
         end select 
@@ -188,4 +205,39 @@ contains
         this%Fx = ForceX*this%delta_t/this%delta_u
 
     end subroutine 
+
+    subroutine compute_Pi(this)
+        class(d3q19), intent(inout) :: this
+        real(rkind), dimension(nvels) :: feq, Fvals
+        integer :: i, j, k, idx
+        real(rkind) :: fneq
+
+        do k = 1,this%gp%zsz(3)
+            do j = 1,this%gp%zsz(2)
+                do i = 1,this%gp%zsz(1)
+                    this%Pitensor(:,i,j,k) = zero
+                    do idx = 1,nvels
+                        call get_Feq_2ndOrder(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
+                                & this%rho(i,j,k),idx,this%Qtensor(:,:,idx),feq(idx))
+                        
+                        call get_ForceSource_2ndOrder(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
+                                & this%Fx, this%Fy, this%Fz, idx, &
+                                & this%Qtensor(:,:,idx), Fvals(idx))
+                        
+                        fneq = this%f(i,j,k,idx) - feq(idx)
+                        
+                        this%Pitensor(1,i,j,k) = this%Pitensor(1,i,j,k) + cx(idx)*cx(idx)*(fneq + half*Fvals(idx))
+                        this%Pitensor(2,i,j,k) = this%Pitensor(2,i,j,k) + cx(idx)*cy(idx)*(fneq + half*Fvals(idx))
+                        this%Pitensor(3,i,j,k) = this%Pitensor(3,i,j,k) + cx(idx)*cz(idx)*(fneq + half*Fvals(idx))
+                        this%Pitensor(4,i,j,k) = this%Pitensor(4,i,j,k) + cy(idx)*cy(idx)*(fneq + half*Fvals(idx))
+                        this%Pitensor(5,i,j,k) = this%Pitensor(5,i,j,k) + cy(idx)*cz(idx)*(fneq + half*Fvals(idx))
+                        this%Pitensor(6,i,j,k) = this%Pitensor(6,i,j,k) + cz(idx)*cz(idx)*(fneq + half*Fvals(idx))
+                    end do
+                end do
+            end do 
+        end do 
+    
+    end subroutine 
+
+
 end module 

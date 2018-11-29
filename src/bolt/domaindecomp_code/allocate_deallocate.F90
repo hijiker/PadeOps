@@ -8,7 +8,6 @@
         allocate(this%rho(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
         
         allocate(this%tau(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
-        allocate(this%nu(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
         
         allocate(this%VisBuff(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
 
