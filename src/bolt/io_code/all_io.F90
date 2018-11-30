@@ -5,7 +5,7 @@ subroutine read_inputfile(this, inputfile)
         integer :: nx, ny, nz, CollisionModel=0, restart_runID, restart_timeID, runID
         integer :: tid_vis, tid_restart, ierr
         character(len=clen) :: inputdir, outputdir
-        logical ::  isZPeriodic, useConstantBodyForce, useSmagorinsky=.false., restartSimulation=.false. 
+        logical ::  isZPeriodic=.false., useConstantBodyForce, useSmagorinsky=.false., restartSimulation=.false. 
         real(rkind) :: Re = 10.d0, delta_t = 0.1d0, delta_x = 0.2d0, Fx = zero, Fy = zero, Fz = zero
 
         namelist /INPUT/ nx, ny, nz, restartSimulation, restart_runID, restart_timeID
@@ -14,6 +14,7 @@ subroutine read_inputfile(this, inputfile)
 
         open(unit=123, file=trim(inputfile), form='FORMATTED', iostat=ierr)
         read(unit=123, NML=INPUT)
+        read(unit=123, NML=PHYSICS)
         read(unit=123, NML=IO)
         close(123)
 

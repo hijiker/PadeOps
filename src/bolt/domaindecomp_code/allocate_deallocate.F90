@@ -35,6 +35,9 @@
             allocate(this%feqBC (this%gp%zsz(1),this%gp%zsz(2),nvels))
             allocate(this%fneqBC(this%gp%zsz(1),this%gp%zsz(2),nvels))
             
+            allocate(this%tau_B(this%gp%zsz(1),this%gp%zsz(2)))
+            allocate(this%tau_T(this%gp%zsz(1),this%gp%zsz(2)))
+            
         end if 
     end subroutine 
     

@@ -127,15 +127,24 @@ contains
 #include "d3q19_codes/d3q19_init.F90"
 
     subroutine time_advance(this)
+        use timer, only: tic, toc
         class(d3q19), intent(inout) :: this
 
+        call tic()
         call this%collide()
+        call toc()
         
+        call tic()
         call this%stream()   ! Look at "d3q19_codes/d3q19_streaming.F90"
+        call toc()
         
+        call tic()
         call this%updateBCs()
+        call toc()
         
+        call tic()
         call this%wrapup_timestep()
+        call toc()
 
     end subroutine 
 
@@ -153,7 +162,7 @@ contains
             return 
         else
             ! User defnined BC (dirichlet)
-            call getWallBC_bolt(this%gp, this%ux, this%uy, this%uz, this%uBot, &
+            call getWallBC_bolt(this%gp, this%Re, this%delta_u, this%ux, this%uy, this%uz, this%uBot, &
                 & this%vBot, this%wBot, this%uTop, this%vTop, this%wTop)
 
             call this%NEQ_BB_Reg()

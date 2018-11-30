@@ -23,7 +23,7 @@ subroutine compute_tau_smag(this)
         end do 
     end do
 
-    call getWall_nut(this%gp,this%ux, this%uy, this%uz, this%Re, this%tau_B, this%tau_T)
+    call getWall_nut(this%gp, this%delta_nu, this%ux, this%uy, this%uz, this%Re, this%tau_B, this%tau_T)
     this%tau(:,:,1) = this%tau_B
     this%tau(:,:,this%gp%zsz(3)) = this%tau_T
 
