@@ -8,9 +8,9 @@ restartSimulation = .false.
 &PHYSICS
 CollisionModel = 0
 useConstantBodyForce = .true. 
-useSmagorinsky = .true. 
+useSGSmodel = .true. 
 isZPeriodic = .false. 
-Re = 3.959982125504702d1
+Re = 3.959982125504702d3
 delta_x = 0.02d0  
 delta_t = 1.662761269924544d-4 
 Fx = 1.715000876183120

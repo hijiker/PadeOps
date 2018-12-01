@@ -39,6 +39,10 @@
             allocate(this%tau_T(this%gp%zsz(1),this%gp%zsz(2)))
             
         end if 
+    
+        if (this%useSGSmodel) then
+            allocate(this%nuSGS(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        end if 
     end subroutine 
     
     subroutine destroy(this)

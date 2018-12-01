@@ -52,7 +52,7 @@ module d3q19mod
         real(rkind), dimension(:,:,:), allocatable :: OneByTau, OneByTwoTau
         real(rkind), dimension(3,3,nvels) :: QTensor
 
-        logical :: useRestart = .false., useConstantBodyForce = .false., isZPeriodic = .true., useSmagorinsky=.false.
+        logical :: useRestart = .false., useConstantBodyForce = .false., isZPeriodic = .true.
 
         integer :: CollisionModel, restart_RunID, restart_timeID, RunID, tid_vis=10000, tid_restart=10000
 
@@ -66,7 +66,7 @@ module d3q19mod
         real(rkind), dimension(:,:,:), allocatable :: feqBC, fneqBC
         real(rkind), dimension(:,:,:,:), allocatable :: PiBC
         real(rkind), dimension(:,:,:,:), allocatable :: PiTensor
-        real(rkind), dimension(:,:,:), allocatable :: buff1, buff2
+        real(rkind), dimension(:,:,:), allocatable :: buff1, buff2, nuSGS
 
         ! Streaming data arrays
         real(rkind), dimension(:,:), allocatable :: YZslice, XZslice, XYslice

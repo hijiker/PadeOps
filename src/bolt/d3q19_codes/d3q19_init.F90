@@ -66,6 +66,7 @@
         end if 
 
         call message(0, "D3Q19 lattice initialized.")
+        call message(1, "nu_visc", this%nu)
     end subroutine 
 
 

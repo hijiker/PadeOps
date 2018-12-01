@@ -1,7 +1,7 @@
 subroutine compute_tau_smag(this)
     class(d3q19), intent(inout) :: this
     integer :: i, j, k
-    real(rkind) :: nusgs, tmp, PiProd
+    real(rkind) :: tmp, PiProd
 
     call this%compute_Pi()
     do k = 1,this%gp%zsz(3)
@@ -16,9 +16,9 @@ subroutine compute_tau_smag(this)
                        + two*this%PiTensor(3,i,j,k)*this%PiTensor(3,i,j,k) &
                        + two*this%PiTensor(5,i,j,k)*this%PiTensor(5,i,j,k)
                 
-                nusgs = C_Smag_sq*sqrt(two*PiProd)*tmp
+                this%nusgs(i,j,k) = C_Smag_sq*sqrt(two*PiProd)*tmp
                 
-                this%tau(i,j,k) = (nusgs+this%nu)*oneByCsq + half 
+                this%tau(i,j,k) = (this%nusgs(i,j,k)+this%nu)*oneByCsq + half 
             end do 
         end do 
     end do

@@ -221,6 +221,7 @@ subroutine getWall_nut(decomp, delta_nu, ux, uy, uz, Re, tau_B, tau_T)
     use constants, only: zero
     use d3q19_channel3D
     use constants, only: three, half
+    use exits, only: message
     implicit none
 
     type(decomp_info), intent(in) :: decomp
@@ -240,6 +241,7 @@ subroutine getWall_nut(decomp, delta_nu, ux, uy, uz, Re, tau_B, tau_T)
     Va = 1.d0 - exp(-yp/26.d0)
     nu_t = (((kappa*zfirst*Va)**2)*dudy_wall + (one/Re))/delta_nu
 
+    call message(2,"Wall nu_t:", nu_t)
     tau_B = nu_t*three + half 
     tau_T = nu_t*three + half 
 
