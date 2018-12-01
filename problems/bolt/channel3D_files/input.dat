@@ -1,7 +1,7 @@
 &INPUT
-nx = 472 
-ny = 472 
-nz = 150
+nx = 315 
+ny = 315 
+nz = 100
 restartSimulation = .false. 
 /
 /
@@ -10,19 +10,19 @@ CollisionModel = 0
 useConstantBodyForce = .true. 
 useSmagorinsky = .true. 
 isZPeriodic = .false. 
-Re = 3.959982125504702d3
-delta_x = 0.013333333333333d0 
-delta_t = 5.542537566415178d-5  
+Re = 3.959982125504702d1
+delta_x = 0.02d0  
+delta_t = 1.662761269924544d-4 
 Fx = 1.715000876183120
 Fy = 0.d0 
 Fz = 0.d0 
 /
 /
 &IO
-inputdir          = "/scratch/04076/tg833754/LBM_channel/output"   ! Directory for any input files
-outputdir         = "/scratch/04076/tg833754/LBM_channel/output"   ! Directory for all output files
-RunID             = 1
-tid_vis           = 10
-tid_restart       = 1000
+inputdir          = "/nobackup/aghate/channel3d"   ! Directory for any input files
+outputdir         = "/nobackup/aghate/channel3d"   ! Directory for all output files
+RunID             = 10
+tid_vis           = 100
+tid_restart       = 5000
 /
 /

@@ -13,7 +13,8 @@ program channel3d
 
     type(d3q19) :: lattice 
     character(len=clen) :: inputfile 
-    integer :: ierr 
+    integer :: ierr
+    real(rkind) :: t_stop = 1.d-1 
 
     call MPI_Init(ierr)               !<-- Begin MPI
     call GETARG(1,inputfile)          !<-- Get the location of the input file
@@ -22,7 +23,13 @@ program channel3d
 
     call lattice%dumpVisualizationFields()
 
-    call lattice%time_advance()
+    call tic()
+    do while (lattice%step<1000)
+        call lattice%time_advance()
+        call doTemporalStuff(lattice)
+    end do 
+    call doTemporalStuff(lattice)
+    call lattice%dumpVisualizationFields()
 
     call lattice%destroy()
 

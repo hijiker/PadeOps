@@ -40,6 +40,9 @@ contains
         uy = get_womersley(z)*sin(2.d0*pi*nmodes_y*x/Lx)
         uz = 0.d0 
 
+        !ux = um
+        !uy = 0.d0
+        
     end subroutine 
 
     pure elemental function get_womersley(z) result(u)

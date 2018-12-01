@@ -130,21 +130,13 @@ contains
         use timer, only: tic, toc
         class(d3q19), intent(inout) :: this
 
-        call tic()
         call this%collide()
-        call toc()
         
-        call tic()
         call this%stream()   ! Look at "d3q19_codes/d3q19_streaming.F90"
-        call toc()
         
-        call tic()
         call this%updateBCs()
-        call toc()
         
-        call tic()
         call this%wrapup_timestep()
-        call toc()
 
     end subroutine 
 

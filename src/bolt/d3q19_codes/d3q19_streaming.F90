@@ -153,8 +153,8 @@
         this%XZsendb = this%f(:,1,:,vid)
         call MPI_ISEND(this%XZsendb,nx*nz,mpirkind,this%YneighDown,tag,MPI_COMM_WORLD,send_req1,ierr)
         this%XYslice = this%f(:,:,1,vid)
-        this%f(:,1:ny-1,1:nz-1,vid) = this%f(:,2:nx,2:nz,vid)
-        this%f(:,1:ny-1,nz,vid) = this%XYslice(:,2:nx)
+        this%f(:,1:ny-1,1:nz-1,vid) = this%f(:,2:ny,2:nz,vid)
+        this%f(:,1:ny-1,nz,vid) = this%XYslice(:,2:ny)
         call MPI_WAIT(recv_req1,status,ierr)
         this%f(:,ny,1:nz-1,vid) = this%XZslice(:,2:nz)
         this%f(:,ny,nz,vid) = this%XZslice(:,1)
@@ -198,10 +198,12 @@
         this%f(1:nx-1,1,:,vid) = this%XZslice(2:nx,:)
         call MPI_IRECV(this%z1d_recv,nz,mpirkind,this%XneighRight,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%z1d_send = this%XZslice(1,:)
+        call MPI_WAIT(send_req1,status,ierr)
         call MPI_ISEND(this%z1d_send,nz,mpirkind,this%XneighLeft,tag,MPI_COMM_WORLD,send_req1,ierr)
         call MPI_WAIT(recv_req1,status,ierr)
         this%f(nx,1,:,vid) = this%z1d_recv 
         call MPI_WAIT(send_req1,status,ierr)
+        call MPI_WAIT(send_req2,status,ierr)
         
 
         ! Population 15:
