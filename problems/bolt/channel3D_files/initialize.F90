@@ -11,6 +11,12 @@ module d3q19_channel3D
     integer :: nx, ny, nz
     real(rkind) :: Lx, Ly, mfact
 
+    ! Body force constants
+    real(rkind), parameter :: kx_force = 1.d0
+    real(rkind), parameter :: omega_force = 50.d0
+    real(rkind), parameter :: lambda_force = 5.d0 
+    real(rkind), parameter :: Fbase = 1.7150008761831d0
+    
 end module 
 
 module get_initial_profiles_channel
@@ -246,4 +252,35 @@ subroutine getWall_nut(decomp, delta_nu, ux, uy, uz, Re, tau_B, tau_T)
     tau_T = nu_t*three + half 
 
 end subroutine 
+
+subroutine getBodyForce(decomp, time, delta_u, delta_t, ux, uy, uz, Fx, Fy, Fz)
+    use d3q19_channel3D
+    use kind_parameters, only:  rkind, clen
+    use decomp_2d, only: decomp_info
+    
+    implicit none
+    type(decomp_info), intent(in) :: decomp
+    real(rkind), intent(in) :: time, delta_t, delta_u 
+    real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
+    real(rkind), dimension(:,:,:), intent(out) :: Fx, Fy, Fz 
+    real(rkind) :: Fconst, fact_time, zfact
+    integer :: i, j, k
+
+    Fconst = Fbase*(1.d0 - exp(-lambda_force*time))
+    fact_time = exp(-lambda_force*time)*sin(omega_force*time)
+
+    do k = decomp%zst(3),decomp%zen(3)
+        zfact = tan(z(k))
+        do j = decomp%zst(2),decomp%zen(2)
+            !$omp simd
+            do i = decomp%zst(1),decomp%zen(1)
+                Fx(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = Fconst +  zfact*fact_time*sin(kx_force*x(i))
+            end do 
+        end do 
+    end do 
+    Fy = 0.d0
+    Fz = 0.d0 
+end subroutine 
+
+
 

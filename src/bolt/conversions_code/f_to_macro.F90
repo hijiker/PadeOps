@@ -18,15 +18,15 @@
 
                     this%ux(i,j,k)  = (this%f(i,j,k,1 ) - this%f(i,j,k,2 ) + this%f(i,j,k,7 ) - this%f(i,j,k,8 ) &
                                  &  +  this%f(i,j,k,9 ) - this%f(i,j,k,10) + this%f(i,j,k,13) - this%f(i,j,k,14) &
-                                 &  +  this%f(i,j,k,15) - this%f(i,j,k,16) + half*this%Fx)*onebyrho                           
+                                 &  +  this%f(i,j,k,15) - this%f(i,j,k,16) + half*this%Fx(i,j,k))*onebyrho                           
                                                                                                                
                     this%uy(i,j,k)  = (this%f(i,j,k,3 ) - this%f(i,j,k,4 ) + this%f(i,j,k,7 ) - this%f(i,j,k,8 ) &
                                  &  +  this%f(i,j,k,11) - this%f(i,j,k,12) - this%f(i,j,k,13) + this%f(i,j,k,14) &
-                                 &  +  this%f(i,j,k,17) - this%f(i,j,k,18) + half*this%Fy)*onebyrho                           
+                                 &  +  this%f(i,j,k,17) - this%f(i,j,k,18) + half*this%Fy(i,j,k))*onebyrho                           
                                                                                                                
                     this%uz(i,j,k)  = (this%f(i,j,k,5 ) - this%f(i,j,k,6 ) + this%f(i,j,k,9 ) - this%f(i,j,k,10) &
                                  &  +  this%f(i,j,k,11) - this%f(i,j,k,12) - this%f(i,j,k,15) + this%f(i,j,k,16) &
-                                 &  -  this%f(i,j,k,17) + this%f(i,j,k,18) + half*this%Fz)*onebyrho 
+                                 &  -  this%f(i,j,k,17) + this%f(i,j,k,18) + half*this%Fz(i,j,k))*onebyrho 
                
                 end do 
             end do 

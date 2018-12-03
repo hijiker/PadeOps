@@ -48,7 +48,8 @@ module d3q19mod
         real(rkind) :: Re
 
         real(rkind), dimension(:,:,:), allocatable :: rho, ux, uy, uz,  tau, VisBuff
-        real(rkind) :: Fx = zero, Fy = zero, Fz = zero , nu
+        real(rkind), dimension(:,:,:), allocatable :: Fx, Fy, Fz
+        real(rkind) :: nu
         real(rkind), dimension(:,:,:), allocatable :: OneByTau, OneByTwoTau
         real(rkind), dimension(3,3,nvels) :: QTensor
 
@@ -58,8 +59,8 @@ module d3q19mod
 
         integer :: step 
 
-        logical :: useSGSmodel = .false. 
-
+        logical :: useSGSmodel = .false., useSpaceTimeBodyForce = .false. 
+ 
         ! Boundary condition data
         real(rkind), dimension(:,:), allocatable :: rhoBC, uTop, vTop, wTop, uBot, vBot, wBot
         real(rkind), dimension(:,:), allocatable :: tau_T, tau_B
@@ -178,6 +179,11 @@ contains
 
         if (this%useSGSmodel) then
             call this%compute_tau_smag()
+        end if
+
+        if (this%useSpaceTimeBodyForce) then
+            call getBodyForce(this%gp, this%getPhysTime(),this%delta_u, this%delta_t, &
+              &  this%ux, this%uy, this%uz, this%Fx, this%Fy, this%Fz)
         end if 
     end subroutine 
 
@@ -222,7 +228,7 @@ contains
                                 & this%rho(i,j,k),idx,this%Qtensor(:,:,idx),feq(idx))
                         
                         call get_ForceSource_2ndOrder(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
-                                & this%Fx, this%Fy, this%Fz, idx, &
+                                & this%Fx(i,j,k), this%Fy(i,j,k), this%Fz(i,j,k), idx, &
                                 & this%Qtensor(:,:,idx), Fvals(idx))
                         
                         fneq = this%f(i,j,k,idx) - feq(idx)

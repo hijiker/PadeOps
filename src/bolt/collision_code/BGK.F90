@@ -12,7 +12,7 @@
                                 & this%rho(i,j,k),idx,this%Qtensor(:,:,idx),feq)
                         
                         call get_ForceSource_2ndOrder(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
-                                & this%Fx, this%Fy, this%Fz, idx, &
+                                & this%Fx(i,j,k), this%Fy(i,j,k), this%Fz(i,j,k), idx, &
                                 & this%Qtensor(:,:,idx), Force)
                         
                         oneByTau = one/this%tau(i,j,k)
@@ -41,7 +41,7 @@
                                 & this%rho(i,j,k),idx,this%Qtensor(:,:,idx),feq)
                         
                         call get_ForceSource_2ndOrder(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
-                                & this%Fx, this%Fy, this%Fz, idx, &
+                                & this%Fx(i,j,k), this%Fy(i,j,k), this%Fz(i,j,k), idx, &
                                 & this%Qtensor(:,:,idx), Force)
                         
                         oneByTau = one/this%tau(i,j,k)

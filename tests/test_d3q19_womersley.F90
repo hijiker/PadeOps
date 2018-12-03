@@ -38,7 +38,7 @@ program test_d3q19_womersley
     lattice%Re = Reynolds_number
    
 
-    lattice%CollisionModel = 0
+    lattice%CollisionModel = 1
     lattice%isZPeriodic = .false. 
     lattice%useConstantBodyForce = .true.
     lattice%Fx = p0

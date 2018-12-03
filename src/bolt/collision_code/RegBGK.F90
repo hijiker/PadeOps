@@ -16,7 +16,7 @@
                                 & this%rho(i,j,k),idx,this%Qtensor(:,:,idx),feq(idx))
                         
                         call get_ForceSource_2ndOrder(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
-                                & this%Fx, this%Fy, this%Fz, idx, &
+                                & this%Fx(i,j,k), this%Fy(i,j,k), this%Fz(i,j,k), idx, &
                                 & this%Qtensor(:,:,idx), Fvals(idx))
 
                         fneq = floc(idx) - feq(idx)
@@ -37,7 +37,7 @@
                         freg = w(idx)*oneby2c4*(Preg(1)*this%Qtensor(1,1,idx) + two*Preg(2)*this%Qtensor(1,2,idx) &
                             &  + two*Preg(3)*this%Qtensor(1,3,idx) + Preg(4)*this%Qtensor(2,2,idx) &
                             &  + two*Preg(5)*this%Qtensor(2,3,idx) + Preg(6)*this%Qtensor(3,3,idx)) &
-                            &  - (w(idx)*half*onebycsq)*(cx(idx)*this%Fx + cy(idx)*this%Fy + cz(idx)*this%Fz)
+                            &  - (w(idx)*half*onebycsq)*(cx(idx)*this%Fx(i,j,k) + cy(idx)*this%Fy(i,j,k) + cz(idx)*this%Fz(i,j,k))
                         
                         this%f(i,j,k,idx) = feq(idx) + (one - oneBytau)*freg + (one - half*oneBytau)*Fvals(idx) 
                     end do 

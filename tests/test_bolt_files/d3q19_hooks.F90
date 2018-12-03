@@ -178,3 +178,21 @@ subroutine getWall_nut(decomp,delta_nu, ux, uy, uz, Re, tau_B, tau_T)
 
 end subroutine 
 
+subroutine getBodyForce(decomp, time, delta_u, delta_t, ux, uy, uz, Fx, Fy, Fz)
+    use kind_parameters, only:  rkind, clen
+    use decomp_2d, only: decomp_info
+    
+    implicit none
+    type(decomp_info), intent(in) :: decomp
+    real(rkind), intent(in) :: time, delta_t, delta_u 
+    real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
+    real(rkind), dimension(:,:,:), intent(out) :: Fx, Fy, Fz 
+
+
+    Fx = 0.d0 
+    Fy = 0.d0
+    Fz = 0.d0 
+end subroutine 
+
+
+

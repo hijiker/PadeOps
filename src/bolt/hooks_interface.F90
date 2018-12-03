@@ -39,4 +39,16 @@ module bolt_hooks
 
         end subroutine 
     end interface 
+
+    interface getBodyForce
+        subroutine getBodyForce(decomp, time, delta_u, delta_t, ux, uy, uz, Fx, Fy, Fz)
+            import :: rkind
+            import :: decomp_info
+            type(decomp_info), intent(in) :: decomp
+            real(rkind), intent(in) :: time, delta_u, delta_t 
+            real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
+            real(rkind), dimension(:,:,:), intent(out) :: Fx, Fy, Fz 
+
+        end subroutine 
+    end interface
 end module 

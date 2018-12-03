@@ -8,9 +8,9 @@
                 do j = 1,this%gp%zsz(2)
                     !$omp simd 
                     do i = 1,this%gp%zsz(1)
-                        uin = this%ux(i,j,k) - this%Fx/(two*this%rho(i,j,k))
-                        vin = this%uy(i,j,k) - this%Fy/(two*this%rho(i,j,k))
-                        win = this%uz(i,j,k) - this%Fz/(two*this%rho(i,j,k))
+                        uin = this%ux(i,j,k) - this%Fx(i,j,k)/(two*this%rho(i,j,k))
+                        vin = this%uy(i,j,k) - this%Fy(i,j,k)/(two*this%rho(i,j,k))
+                        win = this%uz(i,j,k) - this%Fz(i,j,k)/(two*this%rho(i,j,k))
                         call get_Feq_2ndOrder(uin,vin,win, this%rho(i,j,k), &
                             & idx,this%Qtensor(:,:,idx),this%f(i,j,k,idx))
                         

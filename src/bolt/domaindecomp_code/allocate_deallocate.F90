@@ -7,6 +7,10 @@
         allocate(this%uz (this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
         allocate(this%rho(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
         
+        allocate(this%Fx (this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        allocate(this%Fy (this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        allocate(this%Fz (this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        
         allocate(this%tau(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
         
         allocate(this%VisBuff(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
@@ -42,7 +46,12 @@
     
         if (this%useSGSmodel) then
             allocate(this%nuSGS(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
-        end if 
+        end if
+
+        this%Fx = zero
+        this%Fy = zero
+        this%Fz = zero
+
     end subroutine 
     
     subroutine destroy(this)

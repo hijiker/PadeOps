@@ -3,27 +3,28 @@
         integer :: vid
 
         ! Impose BOTTOM BC
-        call this%compute_rhoBC(fminus,this%wBot,this%f(:,:,1,:),-1)
+        call this%compute_rhoBC(fminus,this%wBot,this%f(:,:,1,:),-1, 1)
         call this%compute_f_BC(this%uBot, this%vBot, this%wBot,this%f(:,:,1,:))
         do vid = 1,size(fplus)
             this%fneqBC(:,:,fplus(vid)) = this%fneqBC(:,:,fminus(vid))
         end do 
-        call this%RegularizeFneq_BC()
+        call this%RegularizeFneq_BC(1)
         this%f(:,:,1,:) = this%feqBC + this%fneqBC
         
         ! Impose TOP BC
-        call this%compute_rhoBC(fplus,this%wBot,this%f(:,:,this%nz,:),1)
+        call this%compute_rhoBC(fplus,this%wBot,this%f(:,:,this%nz,:),1, this%nz)
         call this%compute_f_BC(this%uBot, this%vBot, this%wBot,this%f(:,:,this%nz,:))
         do vid = 1,size(fminus)
             this%fneqBC(:,:,fminus(vid)) = this%fneqBC(:,:,fplus(vid))
         end do 
-        call this%RegularizeFneq_BC()
+        call this%RegularizeFneq_BC(this%nz)
         this%f(:,:,this%nz,:) = this%feqBC + this%fneqBC
 
     end subroutine 
 
-    subroutine RegularizeFneq_BC(this)
+    subroutine RegularizeFneq_BC(this, fid)
         class(d3q19), intent(inout) :: this
+        integer, intent(in) :: fid
         integer :: vid, i, j
 
         this%PiBC = zero 
@@ -48,7 +49,7 @@
                                & + two*this%PiBC(:,:,1,2)*this%Qtensor(1,2,vid) + two*this%PiBC(:,:,1,3)*this%Qtensor(1,3,vid) & 
                                & + this%PiBC(:,:,2,2)*this%Qtensor(2,2,vid) + two*this%PiBC(:,:,2,3)*this%Qtensor(2,3,vid) & 
                                & + this%PiBC(:,:,3,3)*this%Qtensor(3,3,vid))& 
-                               & - (w(vid)*half*onebycsq)*(cx(vid)*this%Fx + cy(vid)*this%Fy + cz(vid)*this%Fz)
+                               & - (w(vid)*half*onebycsq)*(cx(vid)*this%Fx(:,:,fid) + cy(vid)*this%Fy(:,:,fid) + cz(vid)*this%Fz(:,:,fid))
         end do 
 
     end subroutine
@@ -75,12 +76,12 @@
     end subroutine 
 
 
-    subroutine compute_rhoBC(this, fknown, wBC, fBC, sgForce)
+    subroutine compute_rhoBC(this, fknown, wBC, fBC, sgForce, fid)
         class(d3q19), intent(inout) :: this
         integer, dimension(:), intent(in) :: fknown
         real(rkind), dimension(this%gp%zsz(1),this%gp%zsz(2)), intent(in) :: wBC
         real(rkind), dimension(this%gp%zsz(1),this%gp%zsz(2),nvels), intent(in) :: fBC
-        integer, intent(in) :: sgForce
+        integer, intent(in) :: sgForce, fid
         integer :: vid
         
         this%rhoBC = zero
@@ -90,6 +91,6 @@
         do vid = 1,size(fknown)
             this%rhoBC = this%rhoBC + two*fBC(:,:,fknown(vid))
         end do 
-        this%rhoBC = (this%rhoBC + sgForce*half*this%Fz)/(one + wBC )
+        this%rhoBC = (this%rhoBC + sgForce*half*this%Fz(:,:,fid))/(one + wBC )
 
     end subroutine 
