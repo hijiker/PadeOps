@@ -14,7 +14,7 @@ program test_d3q19_laminarchannel
     type(d3q19) :: lattice 
     integer :: ierr
     integer :: nx = 1, ny = 1, nz = 20
-    real(rkind) :: Tstop = 100._rkind
+    real(rkind) :: Tstop = 150._rkind
     real(rkind) :: tmp, accum
     real(rkind) :: beta_t = 0.3_rkind
 
@@ -38,7 +38,7 @@ program test_d3q19_laminarchannel
     lattice%isZPeriodic = .false. 
     lattice%useConstantBodyForce = .true.
     lattice%Fx = Force
-    lattice%CollisionModel = 0
+    lattice%CollisionModel = 1
 
     call lattice%init(testing=.true.)
 
