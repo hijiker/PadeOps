@@ -24,7 +24,7 @@ program channel3d
     call lattice%dumpVisualizationFields()
 
     call tic()
-    do while (lattice%step<100)
+    do while (lattice%step<50000)
         call lattice%time_advance()
         call doTemporalStuff(lattice)
     end do 

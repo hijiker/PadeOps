@@ -54,6 +54,7 @@ module d3q19mod
         real(rkind), dimension(3,3,nvels) :: QTensor
 
         logical :: useRestart = .false., useConstantBodyForce = .false., isZPeriodic = .true.
+        logical :: restartWithTau = .false. 
 
         integer :: CollisionModel, restart_RunID, restart_timeID, RunID, tid_vis=10000, tid_restart=10000
 
@@ -167,11 +168,6 @@ contains
         class(d3q19), intent(inout) :: this
 
         this%step = this%step + 1
-        call this%compute_macroscopic()
-        
-        if (mod(this%step,this%tid_vis) == 0) then
-            call this%dumpVisualizationFields()
-        end if 
 
         if (mod(this%step,this%tid_restart)==0) then
             call this%dumpRestart()
@@ -185,6 +181,12 @@ contains
             call getBodyForce(this%gp, this%getPhysTime(),this%delta_u, this%delta_t, &
               &  this%ux, this%uy, this%uz, this%Fx, this%Fy, this%Fz)
         end if 
+        
+        if (mod(this%step,this%tid_vis) == 0) then
+            call this%dumpVisualizationFields()
+        end if 
+        
+        call this%compute_macroscopic()
     end subroutine 
 
     subroutine collide(this)

@@ -13,10 +13,10 @@ module d3q19_channel3D
 
     ! Body force constants
     real(rkind), parameter :: kx_force = 1.d0
-    real(rkind), parameter :: omega_force = 50.d0
-    real(rkind), parameter :: lambda_force = 5.d0 
+    real(rkind), parameter :: lambda1_force = 2.d0 
+    real(rkind), parameter :: lambda2_force = 10.d0 
     real(rkind), parameter :: Fbase = 1.7150008761831d0
-    
+    real(rkind), parameter :: Force_amp = 15.d0     
 end module 
 
 module get_initial_profiles_channel
@@ -169,6 +169,10 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
         end do 
     end do
 
+    ux = 1.d0
+    uy = 0.d0
+    uz = 0.d0 
+
     zmatch = z(2) + 1.d0 
     zfirst = z(1) + 1.d0 
     mfact = 1.d0/real(nx*ny,rkind)
@@ -218,6 +222,14 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     uyT = uyT*ubc/(uzT*delta_u + 1.d-18)
     uzT = zero
     
+    !uxB = 0.d0
+    !uyB = 0.d0
+    !uzB = 0.d0
+
+    !uxT = 0.d0
+    !uyT = 0.d0
+    !uzT = 0.d0
+
 end subroutine 
 
 
@@ -257,6 +269,7 @@ subroutine getBodyForce(decomp, time, delta_u, delta_t, ux, uy, uz, Fx, Fy, Fz)
     use d3q19_channel3D
     use kind_parameters, only:  rkind, clen
     use decomp_2d, only: decomp_info
+    use constants, only: pi
     
     implicit none
     type(decomp_info), intent(in) :: decomp
@@ -266,19 +279,19 @@ subroutine getBodyForce(decomp, time, delta_u, delta_t, ux, uy, uz, Fx, Fy, Fz)
     real(rkind) :: Fconst, fact_time, zfact
     integer :: i, j, k
 
-    Fconst = Fbase*(1.d0 - exp(-lambda_force*time))
-    fact_time = exp(-lambda_force*time)*sin(omega_force*time)
+    Fconst = Fbase*(1.d0 - exp(-lambda2_force*time))
+    fact_time = exp(-lambda1_force*time)
 
     do k = decomp%zst(3),decomp%zen(3)
-        zfact = tan(z(k))
+        zfact = Force_amp*(tan(z(k)) + 0.2d0*cos(1.d0*z(k)*2.d0*pi))
         do j = decomp%zst(2),decomp%zen(2)
             !$omp simd
             do i = decomp%zst(1),decomp%zen(1)
-                Fx(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = Fconst +  zfact*fact_time*sin(kx_force*x(i))
+                Fx(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (Fconst +  zfact*fact_time*sin(kx_force*x(i)*2.d0*pi/Lx))*delta_t/delta_u
+                Fy(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (zfact*fact_time*sin(kx_force*y(j)*2.d0*pi/Ly))*delta_t/delta_u
             end do 
         end do 
     end do 
-    Fy = 0.d0
     Fz = 0.d0 
 end subroutine 
 

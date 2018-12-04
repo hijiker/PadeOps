@@ -11,18 +11,19 @@ contains
 subroutine doTemporalStuff(bgp)
     class(d3q19), intent(in) :: bgp
     real(rkind) :: usum, vsum, wsum
+    real(rkind) :: fmin, fmax
 
     usum = p_sum(sum(bgp%ux))/real(bgp%nx*bgp%ny*bgp%nz,rkind) 
     vsum = p_sum(sum(bgp%uy))/real(bgp%nx*bgp%ny*bgp%nz,rkind)
     wsum = p_sum(sum(bgp%uz))/real(bgp%nx*bgp%ny*bgp%nz,rkind)
 
+    fmax = p_maxval(maxval(bgp%f))
+    fmin = p_minval(minval(bgp%f))
     call message(0,"Time:", bgp%getPhysTime())
     call message(0,"TIDX:", bgp%step)
     call message(1,"u_tau:", utau)
     call message(1,"u_match:", umatch)
-    call message(1,"Domain u_sum:", usum)
-    call message(1,"Domain v_sum:", vsum)
-    call message(1,"Domain w_sum:", wsum)
+    call message_min_max(1,"Bounds for f  :", fmin, fmax) 
     call message_min_max(1,"Bounds for u  :", p_minval(minval(bgp%ux))*bgp%delta_u, p_maxval(maxval(bgp%ux))*bgp%delta_u)
     call message_min_max(1,"Bounds for v  :", p_minval(minval(bgp%uy))*bgp%delta_u, p_maxval(maxval(bgp%uy))*bgp%delta_u)
     call message_min_max(1,"Bounds for w  :", p_minval(minval(bgp%uz))*bgp%delta_u, p_maxval(maxval(bgp%uz))*bgp%delta_u)
