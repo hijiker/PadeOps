@@ -5,7 +5,8 @@ subroutine read_inputfile(this, inputfile)
         integer :: nx, ny, nz, CollisionModel=0, restart_runID, restart_timeID, runID
         integer :: tid_vis, tid_restart, ierr
         character(len=clen) :: inputdir, outputdir
-        logical ::  isZPeriodic=.false., useConstantBodyForce, useSGSmodel=.false., restartSimulation=.false., useSpaceTimeBodyForce = .false.  
+        logical ::  isZPeriodic=.false., useConstantBodyForce, useSGSmodel=.false.
+        logical :: restartSimulation=.false., useSpaceTimeBodyForce = .false., restartWithTau = .false. 
         real(rkind) :: Re = 10.d0, delta_t = 0.1d0, delta_x = 0.2d0, Fx = zero, Fy = zero, Fz = zero
 
         namelist /INPUT/ nx, ny, nz, restartSimulation, restart_runID, restart_timeID
@@ -29,7 +30,8 @@ subroutine read_inputfile(this, inputfile)
         this%restart_runID = restart_runID
         this%restart_timeID = restart_timeID
         this%useSpaceTimeBodyForce = useSpaceTimeBodyForce
-            
+        this%restartWithTau = restartwithTau
+
         this%nx = nx
         this%ny = ny
         this%nz = nz
@@ -90,6 +92,9 @@ subroutine dumpRestart(this)
         call decomp_2d_write_one(3,this%f(:,:,:,vid),fname, this%gp)
     end do 
 
+    write(tempname,"(A7,A4,I2.2,A4,A1,I6.6)") "RESTART", "_Run",this%runID, "_tau",".",this%step
+    fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
+    call decomp_2d_write_one(3,this%tau,fname, this%gp)
 end subroutine
 
 
@@ -104,6 +109,12 @@ subroutine readRestart(this)
         fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
         call decomp_2d_read_one(3,this%f(:,:,:,vid),fname, this%gp)
     end do 
+    
+    if (this%restartWithTau) then
+        write(tempname,"(A7,A4,I2.2,A4,A1,I6.6)") "RESTART", "_Run",this%runID, "_tau",".",this%step
+        fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
+        call decomp_2d_read_one(3,this%tau,fname,this%gp)
+    end if  
 
     this%step = this%restart_timeID
 

@@ -8,7 +8,7 @@ subroutine compute_tau_smag(this)
         do j = 1,this%gp%zsz(2)
             !$omp simd
             do i = 1,this%gp%zsz(1)
-                tmp = one/(this%tau(i,j,k)*csq*this%rho(i,j,k))
+                tmp = one/(this%tau(i,j,k)*csq)
                 PiProd = this%PiTensor(1,i,j,k)*this%PiTensor(1,i,j,k) &
                        + this%PiTensor(4,i,j,k)*this%PiTensor(4,i,j,k) &
                        + this%PiTensor(6,i,j,k)*this%PiTensor(6,i,j,k) &

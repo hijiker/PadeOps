@@ -53,11 +53,10 @@
         allocate(this%buff2(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
         allocate(this%PiTensor(6,this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
 
+        call initfields_bolt(this%gp, inputfile, this%delta_x, this%rho, this%ux, this%uy, this%uz)
         if (this%useRestart) then
             call this%readRestart()   
-            call this%compute_macroscopic()
         else
-            call initfields_bolt(this%gp, inputfile, this%delta_x, this%rho, this%ux, this%uy, this%uz)
             this%ux = this%ux/this%delta_u 
             this%uy = this%uy/this%delta_u 
             this%uz = this%uz/this%delta_u 
@@ -74,6 +73,8 @@
             call getBodyForce(this%gp, this%getPhysTime(),this%delta_u, this%delta_t, &
               &  this%ux, this%uy, this%uz, this%Fx, this%Fy, this%Fz)
         end if 
+            
+        call this%compute_macroscopic()
 
         call message(0, "D3Q19 lattice initialized.")
         call message(1, "nu_visc", this%nu)
