@@ -100,19 +100,34 @@ end subroutine
 
 subroutine readRestart(this)
     use decomp_2d_io
+    use mpi 
+    use exits, only: gracefulExit
     class(d3q19), intent(inout) :: this
     character(len=clen) :: tempname, fname
-    integer :: vid
+    integer :: vid, ierr
 
     do vid = 1,nvels
         write(tempname,"(A7,A4,I2.2,A2,I3.3,A1,I6.6)") "RESTART", "_Run",this%restart_runID, "_f",vid,".",this%restart_timeID
         fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
+        open(777,file=trim(fname),status='old',iostat=ierr)
+        if(ierr .ne. 0) then
+            print*, "Rank:", nrank, ". File:", fname, " not found"
+            call mpi_barrier(mpi_comm_world, ierr)
+            call gracefulExit("File I/O issue.",44)
+        end if 
+        close(777)
         call decomp_2d_read_one(3,this%f(:,:,:,vid),fname, this%gp)
     end do 
     
     if (this%restartWithTau) then
-        write(tempname,"(A7,A4,I2.2,A4,A1,I6.6)") "RESTART", "_Run",this%runID, "_tau",".",this%step
+        write(tempname,"(A7,A4,I2.2,A4,A1,I6.6)") "RESTART", "_Run",this%runID, "_tau",".",this%restart_timeID
         fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
+        open(777,file=trim(fname),status='old',iostat=ierr)
+        if(ierr .ne. 0) then
+            print*, "Rank:", nrank, ". File:", fname, " not found"
+            call mpi_barrier(mpi_comm_world, ierr)
+            call gracefulExit("File I/O issue.",44)
+        end if 
         call decomp_2d_read_one(3,this%tau,fname,this%gp)
     end if  
 
