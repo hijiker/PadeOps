@@ -13,7 +13,7 @@ module d3q19_channel3D
 
     ! Body force constants
     real(rkind), parameter :: kx_force = 1.d0
-    real(rkind), parameter :: lambda1_force = 2.d0 
+    real(rkind), parameter :: lambda1_force = 5.d0 
     real(rkind), parameter :: lambda2_force = 10.d0 
     real(rkind), parameter :: Fbase = 1.7150008761831d0
     real(rkind), parameter :: Force_amp = 15.d0     

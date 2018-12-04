@@ -120,7 +120,7 @@ subroutine readRestart(this)
     end do 
     
     if (this%restartWithTau) then
-        write(tempname,"(A7,A4,I2.2,A4,A1,I6.6)") "RESTART", "_Run",this%runID, "_tau",".",this%restart_timeID
+        write(tempname,"(A7,A4,I2.2,A4,A1,I6.6)") "RESTART", "_Run",this%restart_runID, "_tau",".",this%restart_timeID
         fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
         open(777,file=trim(fname),status='old',iostat=ierr)
         if(ierr .ne. 0) then
