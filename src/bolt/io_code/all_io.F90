@@ -9,7 +9,7 @@ subroutine read_inputfile(this, inputfile)
         logical :: restartSimulation=.false., useSpaceTimeBodyForce = .false., restartWithTau = .false. 
         real(rkind) :: Re = 10.d0, delta_t = 0.1d0, delta_x = 0.2d0, Fx = zero, Fy = zero, Fz = zero
 
-        namelist /INPUT/ nx, ny, nz, restartSimulation, restart_runID, restart_timeID
+        namelist /INPUT/ nx, ny, nz, restartSimulation, restart_runID, restart_timeID, restartwithTau
         namelist /PHYSICS/ CollisionModel, useConstantBodyForce, useSGSmodel, isZperiodic, Re, delta_x, delta_t, Fx, Fy, Fz, useSpaceTimeBodyForce
         namelist /IO/ inputdir, outputdir, RunID, tid_vis, tid_restart 
 

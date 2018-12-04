@@ -9,3 +9,4 @@ export FFTW_PATH=/home5/aghate/PadeOps/dependencies/fftw-3.3.5
 export DECOMP_PATH=/home5/aghate/PadeOps/dependencies/2decomp_fft
 export VTK_IO_PATH=/home5/aghate/PadeOps/dependencies/Lib_VTK_IO/build
 export HDF5_PATH=/home5/aghate/PadeOps/dependencies/hdf5-1.8.18
+export ARCH_OPT_FLAG="-xCORE-AVX2"
