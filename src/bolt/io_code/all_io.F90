@@ -3,14 +3,14 @@ subroutine read_inputfile(this, inputfile)
         character(len=*), intent(in) :: inputfile 
 
         integer :: nx, ny, nz, CollisionModel=0, restart_runID, restart_timeID, runID
-        integer :: tid_vis, tid_restart, ierr
+        integer :: tid_vis, tid_restart, ierr, gradient_type = 1 
         character(len=clen) :: inputdir, outputdir
         logical ::  isZPeriodic=.false., useConstantBodyForce, useSGSmodel=.false.
         logical :: restartSimulation=.false., useSpaceTimeBodyForce = .false., restartWithTau = .false. 
         real(rkind) :: Re = 10.d0, delta_t = 0.1d0, delta_x = 0.2d0, Fx = zero, Fy = zero, Fz = zero
 
         namelist /INPUT/ nx, ny, nz, restartSimulation, restart_runID, restart_timeID, restartwithTau
-        namelist /PHYSICS/ CollisionModel, useConstantBodyForce, useSGSmodel, isZperiodic, Re, delta_x, delta_t, Fx, Fy, Fz, useSpaceTimeBodyForce
+        namelist /PHYSICS/ CollisionModel, useConstantBodyForce, useSGSmodel, isZperiodic, Re, delta_x, delta_t, Fx, Fy, Fz, useSpaceTimeBodyForce, gradient_type 
         namelist /IO/ inputdir, outputdir, RunID, tid_vis, tid_restart 
 
         open(unit=123, file=trim(inputfile), form='FORMATTED', iostat=ierr)
@@ -31,6 +31,7 @@ subroutine read_inputfile(this, inputfile)
         this%restart_timeID = restart_timeID
         this%useSpaceTimeBodyForce = useSpaceTimeBodyForce
         this%restartWithTau = restartwithTau
+        this%gradient_type = gradient_type
 
         this%nx = nx
         this%ny = ny

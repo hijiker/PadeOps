@@ -3,13 +3,13 @@ nx = 315
 ny = 315 
 nz = 100
 restartSimulation = .true.
-restart_runID = 15
-restart_timeID = 11000
-restartWithTau = .true. 
+restart_runID = 5
+restart_timeID = 10000
+restartWithTau = .false. 
 /
 /
 &PHYSICS
-CollisionModel = 0
+CollisionModel = 1
 useConstantBodyForce = .true. 
 useSGSmodel = .true. 
 isZPeriodic = .false. 
@@ -20,6 +20,7 @@ Fx = 1.715000876183120
 Fy = 0.d0 
 Fz = 0.d0 
 useSpaceTimeBodyForce = .true. 
+gradient_type = 2 
 /
 /
 &IO

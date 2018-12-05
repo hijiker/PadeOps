@@ -43,9 +43,16 @@
             allocate(this%tau_T(this%gp%zsz(1),this%gp%zsz(2)))
             
         end if 
-    
+   
         if (this%useSGSmodel) then
             allocate(this%nuSGS(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+            allocate(this%duidxj(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3),3,3))
+            allocate(this%rbuffx1(this%gp%xsz(1),this%gp%xsz(2),this%gp%xsz(3)))
+            allocate(this%rbuffx2(this%gp%xsz(1),this%gp%xsz(2),this%gp%xsz(3)))
+            allocate(this%rbuffy1(this%gp%ysz(1),this%gp%ysz(2),this%gp%ysz(3)))
+            allocate(this%rbuffy2(this%gp%ysz(1),this%gp%ysz(2),this%gp%ysz(3)))
+            allocate(this%rbuffz1(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+            allocate(this%rbuffz2(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
         end if
 
         this%Fx = zero

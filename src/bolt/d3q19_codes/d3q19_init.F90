@@ -65,19 +65,21 @@
         end if 
 
 
-        if (this%useSGSmodel) then
-            call this%compute_tau_smag()
-        end if
 
         if (this%useSpaceTimeBodyForce) then
             call getBodyForce(this%gp, this%getPhysTime(),this%delta_u, this%delta_t, &
               &  this%ux, this%uy, this%uz, this%Fx, this%Fy, this%Fz)
         end if 
-            
+        
         call this%compute_macroscopic()
+            
+        if (this%useSGSmodel) then
+            call this%compute_tau_smag()
+        end if
 
         call message(0, "D3Q19 lattice initialized.")
         call message(1, "nu_visc", this%nu)
     end subroutine 
+
 
 

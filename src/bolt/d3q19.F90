@@ -58,10 +58,14 @@ module d3q19mod
 
         integer :: CollisionModel, restart_RunID, restart_timeID, RunID, tid_vis=10000, tid_restart=10000
 
-        integer :: step 
+        integer :: step, gradient_type = 1 
 
         logical :: useSGSmodel = .false., useSpaceTimeBodyForce = .false. 
- 
+
+        ! Finite difference 
+        real(rkind), dimension(:,:,:,:,:), allocatable :: duidxj
+        real(rkind), dimension(:,:,:), allocatable :: rbuffx1, rbuffx2, rbuffy1, rbuffy2, rbuffz1, rbuffz2
+
         ! Boundary condition data
         real(rkind), dimension(:,:), allocatable :: rhoBC, uTop, vTop, wTop, uBot, vBot, wBot
         real(rkind), dimension(:,:), allocatable :: tau_T, tau_B
@@ -87,6 +91,7 @@ module d3q19mod
             procedure :: GetPhysTime
 
             procedure :: compute_Pi
+            procedure :: compute_duidxj 
             procedure :: dumpVisualizationFields
             procedure :: wrapup_timestep
             procedure :: update_bodyForce
@@ -106,6 +111,11 @@ module d3q19mod
             procedure, private :: get_processor_topo
             procedure, private :: allocate_lattice_memory
             procedure, private :: read_inputfile
+
+            procedure, private :: get_ddx
+            procedure, private :: get_ddy
+            procedure, private :: get_ddz
+            procedure, private :: get_gradient 
     end type
 
 
