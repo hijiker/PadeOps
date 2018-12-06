@@ -21,7 +21,7 @@
         call MPI_WAIT(recv_req1,status,ierr)
         this%f(1,:,:,vid) = this%YZslice
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 2: 
         vid = 2
@@ -32,7 +32,7 @@
         call MPI_WAIT(recv_req1,status,ierr)
         this%f(nx,:,:,vid) = this%YZslice
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 3: 
         vid = 3
@@ -43,7 +43,7 @@
         call MPI_WAIT(recv_req1,status,ierr)
         this%f(:,1,:,vid) = this%XZslice
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 4: 
         vid = 4
@@ -54,7 +54,7 @@
         call MPI_WAIT(recv_req1,status,ierr)
         this%f(:,ny,:,vid) = this%XZslice
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 5: 
         vid = 5
@@ -89,7 +89,7 @@
         call MPI_WAIT(recv_req1,status,ierr)
         this%f(1,1,:,vid) = this%z1d_recv 
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 8: 
         vid = 8
@@ -112,7 +112,7 @@
         call MPI_WAIT(recv_req1,status,ierr)
         this%f(nx,ny,:,vid) = this%z1d_recv 
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 9: 
         vid = 9
@@ -126,7 +126,7 @@
         this%f(1,:,2:nz,vid) = this%YZslice(:,1:nz-1)
         this%f(1,:,1,vid) = this%YZslice(:,nz)
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 10: 
         vid = 10
@@ -140,7 +140,7 @@
         this%f(nx,:,1:nz-1,vid) = this%YZslice(:,2:nz)
         this%f(nx,:,nz,vid) = this%YZslice(:,1)
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 11: 
         vid = 11
@@ -154,7 +154,7 @@
         this%f(:,1,2:nz,vid) = this%XZslice(:,1:nz-1)
         this%f(:,1,1,vid) = this%XZslice(:,nz)
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 12: 
         vid = 12
@@ -168,7 +168,7 @@
         this%f(:,ny,1:nz-1,vid) = this%XZslice(:,2:nz)
         this%f(:,ny,nz,vid) = this%XZslice(:,1)
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 13: 
         vid = 13
@@ -191,7 +191,7 @@
         call MPI_WAIT(recv_req1,status,ierr)
         this%f(1,ny,:,vid) = this%z1d_recv 
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
         
 
         ! Population 14: 
@@ -215,7 +215,7 @@
         this%f(nx,1,:,vid) = this%z1d_recv 
         call MPI_WAIT(send_req1,status,ierr)
         call MPI_WAIT(send_req2,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
         
 
         ! Population 15:
@@ -230,7 +230,7 @@
         this%f(1,:,1:nz-1,vid) = this%YZslice(:,2:nz) 
         this%f(1,:,nz,vid) = this%YZslice(:,1)
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 16:
         vid = 16
@@ -244,7 +244,7 @@
         this%f(nx,:,2:nz,vid) = this%YZslice(:,1:nz-1) 
         this%f(nx,:,1,vid) = this%YZslice(:,nz)
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 17:
         vid = 17
@@ -258,7 +258,7 @@
         this%f(:,1,1:nz-1,vid) = this%XZslice(:,2:nz)
         this%f(:,1,nz,vid) = this%XZslice(:,1)
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 18:
         vid = 18
@@ -272,7 +272,7 @@
         this%f(:,ny,2:nz,vid) = this%XZslice(:,1:nz-1)
         this%f(:,ny,1,vid) = this%XZslice(:,nz)
         call MPI_WAIT(send_req1,status,ierr)
-        call mpi_barrier(mpi_comm_world, ierr)
+        !call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 19:
         ! Nothing to do here. 

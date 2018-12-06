@@ -1,0 +1,38 @@
+module temporalHook
+    use kind_parameters, only: rkind
+    use d3q19mod, only: d3q19
+    use exits, only: message, message_min_max
+    use d3q19_taylorgreen2D
+    use timer, only: tic, toc
+    use reductions 
+    implicit none
+contains 
+
+subroutine doTemporalStuff(bgp)
+    class(d3q19), intent(in) :: bgp
+    real(rkind) :: fmin, fmax
+    real(rkind) :: error_u, error_v, error_w
+
+    call update_exact_TG(bgp%getPhysTime(), bgp%Re, bgp%gp) 
+    error_u = p_maxval(maxval(abs(bgp%ux*bgp%delta_u - uexact)))
+    error_v = p_maxval(maxval(abs(bgp%uy*bgp%delta_u - vexact)))
+    error_w = p_maxval(maxval(abs(bgp%uz*bgp%delta_u - wexact)))
+
+    fmax = p_maxval(maxval(bgp%f))
+    fmin = p_minval(minval(bgp%f))
+    call message(0,"Time:", bgp%getPhysTime())
+    call message(0,"TIDX:", bgp%step)
+    call message_min_max(1,"Bounds for f  :", fmin, fmax) 
+    call message_min_max(1,"Bounds for u  :", p_minval(minval(bgp%ux))*bgp%delta_u, p_maxval(maxval(bgp%ux))*bgp%delta_u)
+    call message_min_max(1,"Bounds for v  :", p_minval(minval(bgp%uy))*bgp%delta_u, p_maxval(maxval(bgp%uy))*bgp%delta_u)
+    call message_min_max(1,"Bounds for w  :", p_minval(minval(bgp%uz))*bgp%delta_u, p_maxval(maxval(bgp%uz))*bgp%delta_u)
+    call message_min_max(1,"Bounds for rho:", p_minval(minval(bgp%rho)), p_maxval(maxval(bgp%rho)))
+    call message("----------------------------------------")
+    call message(1,"ERROR(u):", error_u)
+    call message(1,"ERROR(v):", error_v)
+    call message(1,"ERROR(w):", error_w)
+    call toc()
+    call message("========================================")
+    call tic()
+end subroutine 
+end module 

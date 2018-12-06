@@ -1,0 +1,28 @@
+&INPUT
+nx = 64 
+ny = 64 
+nz = 64
+restartSimulation = .false.
+restart_runID = 5
+restart_timeID = 10000
+restartWithTau = .false. 
+/
+/
+&PHYSICS
+CollisionModel = 0
+useConstantBodyForce = .false. 
+useSGSmodel = .false. 
+isZPeriodic = .true. 
+Re = 20.d0
+delta_x = 0.09817477042468d0
+delta_t = 0.0005d0
+/
+/
+&IO
+inputdir          = "/nobackup/aghate/taylorgreen2D"   ! Directory for any input files
+outputdir         = "/nobackup/aghate/taylorgreen2D"   ! Directory for all output files
+RunID             = 6
+tid_vis           = 1000
+tid_restart       = 1000
+/
+/
