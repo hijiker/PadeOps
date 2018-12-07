@@ -1,6 +1,8 @@
 module MRT_D3Q19_coefficients
     use kind_parameters, only: rkind
+    use constants,       only: zero 
 
+    integer, parameter :: nvels = 19
     real(rkind), dimension(19,19), parameter :: M = reshape([   1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0, &
                                                              &-30.d0,-11.d0,-11.d0,-11.d0,-11.d0,-11.d0,-11.d0,  8.d0,  8.d0,  8.d0,  8.d0,  8.d0,  8.d0,  8.d0,  8.d0,  8.d0,  8.d0,  8.d0,  8.d0, &
                                                              & 12.d0, -4.d0, -4.d0, -4.d0, -4.d0, -4.d0, -4.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0, &
@@ -46,15 +48,51 @@ module MRT_D3Q19_coefficients
 
 
 
-    real(rkind), parameter :: lambda0  = 0.d0 
+    real(rkind), parameter :: lambda0  = zero 
     real(rkind), parameter :: lambda1  = 1.19d0  
     real(rkind), parameter :: lambda2  = 1.4d0
-    real(rkind), parameter :: lambda3  = 0.d0
+    real(rkind), parameter :: lambda3  = zero
     real(rkind), parameter :: lambda4  = 1.2d0
-    real(rkind), parameter :: lambda5  = 0.d0 
+    real(rkind), parameter :: lambda5  = zero 
     real(rkind), parameter :: lambda6  = lambda4
-    real(rkind), parameter :: lambda7  = 0.d0
+    real(rkind), parameter :: lambda7  = zero
     real(rkind), parameter :: lambda8  = lambda4
-    real(rkind),           :: lambda9 
     real(rkind), parameter :: lambda10 = lambda2
+    real(rkind), parameter :: lambda12 = lambda2
+    real(rkind), parameter :: lambda16 = 1.98d0
+    real(rkind), parameter :: lambda17 = lambda16
+    real(rkind), parameter :: lambda18 = lambda16
+    
+
+contains 
+    pure subroutine get_MRT_lambda(tau_visc, lambda_vec)
+        use constants, only: two, six, one, zero
+        real(rkind), intent(in) :: tau_visc
+        real(rkind), dimension(nvels), intent(out) :: lambda_vec
+        
+        real(rkind) :: lambda_visc
+
+        lambda_visc = tau_visc 
+        
+        lambda_vec(1 ) = zero 
+        lambda_vec(2 ) = 1.19d0 
+        lambda_vec(3 ) = 1.4d0
+        lambda_vec(4 ) = zero
+        lambda_vec(5 ) = 1.2d0
+        lambda_vec(6 ) = zero 
+        lambda_vec(7 ) = 1.2d0
+        lambda_vec(8 ) = zero
+        lambda_vec(9 ) = 1.2d0
+        lambda_vec(10) = lambda_visc
+        lambda_vec(11) = 1.4d0  
+        lambda_vec(12) = lambda_visc
+        lambda_vec(13) = 1.4d0
+        lambda_vec(14) = lambda_visc 
+        lambda_vec(15) = lambda_visc 
+        lambda_vec(16) = lambda_visc
+        lambda_vec(17) = 1.98d0
+        lambda_vec(18) = 1.98d0
+        lambda_vec(19) = 1.98d0
+
+    end subroutine 
 end module 
