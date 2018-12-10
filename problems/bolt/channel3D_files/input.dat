@@ -1,22 +1,22 @@
 &INPUT
-nx = 315 
-ny = 315 
+nx = 300 
+ny = 300 
 nz = 100
-restartSimulation = .true.
+restartSimulation = .false.
 restart_runID = 5
 restart_timeID = 10000
 restartWithTau = .false. 
 /
 /
 &PHYSICS
-CollisionModel = 1
+CollisionModel = 2
 useConstantBodyForce = .true. 
 useSGSmodel = .true. 
 isZPeriodic = .false. 
-Re = 39.d2
+Re = 2.475d3
 delta_x = 0.02d0  
 delta_t = 2.d-4 
-Fx = 1.715000876183120
+Fx = 4.390402243028787d0 
 Fy = 0.d0 
 Fz = 0.d0 
 useSpaceTimeBodyForce = .true. 
@@ -26,8 +26,8 @@ gradient_type = 2
 &IO
 inputdir          = "/nobackup/aghate/channel3d"   ! Directory for any input files
 outputdir         = "/nobackup/aghate/channel3d"   ! Directory for all output files
-RunID             = 15
-tid_vis           = 500
+RunID             = 1
+tid_vis           = 10
 tid_restart       = 1000
 /
 /

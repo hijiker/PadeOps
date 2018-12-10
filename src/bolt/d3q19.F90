@@ -100,6 +100,7 @@ module d3q19mod
             procedure, private :: collision_BGK 
             procedure, private :: collision_BGK_Force 
             procedure, private :: RegBGK_Force 
+            procedure, private :: collision_MRT_Force 
             procedure, private :: NEQ_BB_Reg
             procedure, private :: compute_rhoBC
             procedure, private :: RegularizeFneq_BC
@@ -129,6 +130,7 @@ contains
 #include "io_code/all_io.F90"
 #include "collision_code/BGK.F90"
 #include "collision_code/RegBGK.F90"
+#include "collision_code/MRT.F90"
 #include "conversions_code/f_to_macro.F90"
 #include "conversions_code/macro_to_feq.F90"
 #include "BC_code/NEQ_BB_reg.F90"
@@ -201,6 +203,7 @@ contains
 
     subroutine collide(this)
         class(d3q19), intent(inout) :: this
+        
 
         select case(this%CollisionModel) 
         case (0) ! BGK
@@ -211,6 +214,8 @@ contains
             end if 
         case (1) ! Reg. BGK
             call this%RegBGK_Force()
+        case (2) ! MRT
+            call this%collision_MRT_Force()
         case default
             call this%collision_BGK_Force()
         end select 

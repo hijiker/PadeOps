@@ -3,9 +3,6 @@ module d3q19_channel3D
     use constants, only: one, pi, two
     implicit none
 
-    real(rkind), parameter :: Lxwant = two*pi
-    real(rkind), parameter :: Lywant = two*pi
-    real(rkind) :: utau  = 1.d0, uMatch 
     real(rkind) :: zmatch, zfirst
     real(rkind), dimension(:), allocatable :: x,y,z
     integer :: nx, ny, nz
@@ -15,8 +12,30 @@ module d3q19_channel3D
     real(rkind), parameter :: kx_force = 1.d0
     real(rkind), parameter :: lambda1_force = 5.d0 
     real(rkind), parameter :: lambda2_force = 10.d0 
-    real(rkind), parameter :: Fbase = 1.7150008761831d0
+    real(rkind), parameter :: Fbase = 4.390402243028787 
     real(rkind), parameter :: Force_amp = 15.d0     
+    
+    real(rkind), dimension(:,:), allocatable :: utau_up, utau_do, yp_up, yp_do, dudz_up, dudz_do, ubc_up, ubc_do
+
+contains
+    subroutine allocate_WM_arrays(decomp)
+        use decomp_2d, only: decomp_info
+        type(decomp_info), intent(in) :: decomp
+
+        allocate(utau_up(decomp%zsz(1),decomp%zsz(2)))
+        allocate(utau_do(decomp%zsz(1),decomp%zsz(2)))
+        allocate(yp_up(decomp%zsz(1),decomp%zsz(2)))
+        allocate(yp_do(decomp%zsz(1),decomp%zsz(2)))
+        
+        allocate(dudz_up(decomp%zsz(1),decomp%zsz(2)))
+        allocate(dudz_do(decomp%zsz(1),decomp%zsz(2)))
+        
+        allocate(ubc_up(decomp%zsz(1),decomp%zsz(2)))
+        allocate(ubc_do(decomp%zsz(1),decomp%zsz(2)))
+        
+        utau_up = 1.d0 
+        utau_do = 1.d0 
+    end subroutine 
 end module 
 
 module get_initial_profiles_channel
@@ -25,10 +44,10 @@ module get_initial_profiles_channel
     
     implicit none
     private
-    public :: get_prof, get_musker_profile
+    public :: get_prof, get_musker_profile, get_musker_gradient
 
-    real(rkind), parameter :: Retau = 5.185915054711403d3
-    real(rkind), parameter :: utau = 1.309580419899106d0  
+    real(rkind), parameter :: Retau = 5.185915054711403d03 
+    real(rkind), parameter :: utau = 2.095328671838570d0 
 
 contains
 
@@ -37,33 +56,17 @@ contains
         real(rkind), intent(out) :: ux, uy, uz
         real(rkind) :: um
         integer :: nmodes_x, nmodes_y
-        
-        nmodes_x = 4
-        nmodes_y = 2
+        real(rkind), parameter :: TG_scale = 1.5d0, period = 2.d0  
 
         um = utau*get_musker_profile((1.d0-abs(z))*Retau)
-        ux = um + get_womersley(z)*cos(2.d0*pi*nmodes_x*y/Ly)
-        uy = get_womersley(z)*sin(2.d0*pi*nmodes_y*x/Lx)
-        uz = 0.d0 
+        ux = um - TG_scale*cos(z*2.d0*pi/period)*sin(x*2.d0*pi/period) 
+        uy = 0.d0  
+        uz = TG_scale*sin(z*2.d0*pi/period)*cos(x*2.d0*pi/period)
 
         !ux = um
         !uy = 0.d0
         
     end subroutine 
-
-    pure elemental function get_womersley(z) result(u)
-        use constants, only: imi
-        real(rkind), intent(in) :: z
-        real(rkind) :: u
-        real(rkind) :: nu,omega,t, p0, D, alpha
-
-        D = 1.d0; nu = 1.d-3; omega = 0.15d0; t=0.5d0; p0 = 1.d0;
-        alpha = (D/2.d0)*sqrt(omega/nu)
-
-        u = real((p0/(imi*omega))*(1.d0 - cosh(sqrt(2.d0)*(1 + imi)*alpha*z/D)/cosh(sqrt(2.d0)*(1 + &
-          & imi)*alpha))*exp(imi*omega*t),rkind)
-        
-    end function 
 
     pure elemental function get_musker_profile(yp) result(up)
         real(rkind), intent(in) :: yp
@@ -71,6 +74,16 @@ contains
 
         up = 5.424d0*atan(0.11976047904*yp - 0.48802395209580833) + 0.434d0*log(((yp + 10.6)**9.6)/((yp**2 &
             & - 8.15*yp + 86)**2)) - 3.50727901936264842
+
+    end function
+    
+    pure elemental function get_musker_gradient(yp) result(dudy_wall)
+        real(rkind), intent(in) :: yp
+        real(rkind) :: dudy_wall
+
+        dudy_wall = (2939515020475289880216614001228638060544.d0/(125.d0*(519229685836867467736034237096533489.d0*yp*yp &
+              & - 4231721939638177189649975113492201472.d0*yp + 44824125224070191636923425342095360000.d0)) + &
+              & (60760.d0*yp*yp - 1132089.d0*yp + 10832423.d0)/(250.d0*(245.d0*yp*yp - 39.d0*yp + 100.d0*yp*yp*yp + 91160.d0)))
 
     end function
 
@@ -135,25 +148,18 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
 
     allocate(x(nx), y(ny))
 
-    Lx = ceiling(Lxwant/delta_x)*delta_x
-    Ly = ceiling(Lywant/delta_x)*delta_x
-
-    if ((ceiling((Lxwant)/delta_x)).ne. nx) then
-        print*, (ceiling((Lxwant)/delta_x)-1)
-        print*, "Lx", Lx
-        print*, "delta_x", delta_x
-        print*, "nx", nx
-        call GracefulExit("Inconsistent nx, ny, nz or delta_x provided",14)
-    end if 
-
-    if ((ceiling((Lywant)/delta_x)).ne. ny) then
-        print*, (ceiling((Lywant)/delta_x)-1)
-        print*, "Ly"
-        call GracefulExit("Inconsistent nx, ny, nz or delta_x provided",14)
-    end if 
+    Lx = (nx/nz)*2.d0 
+    Ly = (ny/nz)*2.d0 
    
     x = linspace(0.d0,Lx-delta_x,nx)
     y = linspace(0.d0,Ly-delta_x,ny)
+    
+    if (abs((x(2) - x(1)) - (z(2) - z(1))) > 1.d-14) then
+        call gracefulExit("Incorrect choice of nx, nz and delta_x",13)
+    end if 
+    if (abs((y(2) - y(1)) - (z(2) - z(1))) > 1.d-14) then
+        call gracefulExit("Incorrect choice of ny, nz and delta_x",13)
+    end if 
     
     rho = one
 
@@ -169,15 +175,16 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
         end do 
     end do
 
-    ux = 1.d0
-    uy = 0.d0
-    uz = 0.d0 
+    !ux = 1.d0
+    !uy = 0.d0
+    !uz = 0.d0 
 
     zmatch = z(2) + 1.d0 
     zfirst = z(1) + 1.d0 
     mfact = 1.d0/real(nx*ny,rkind)
 
 end subroutine 
+
 
 subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, uyT, uzT)
     use kind_parameters, only:  rkind, clen
@@ -189,46 +196,56 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     use get_initial_profiles_channel, only: get_musker_profile
     use constants, only: zero
     use mpi 
+    
     implicit none
 
     type(decomp_info), intent(in) :: decomp
     real(rkind), intent(in) :: Re, delta_u
     real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
     real(rkind), dimension(:,:), intent(out) :: uxB, uyB, uzB, uxT, uyT, uzT
-    real(rkind) :: utau_new, ubc
-    integer :: ierr
+    real(rkind) :: utau_new, umatch
+    integer :: ierr, i, j
+
+    if (.not. allocated(utau_up)) then
+        call allocate_WM_arrays(decomp)
+    end if 
 
     ! STEP 1: Get utau
-    umatch = 0.5d0*mfact*(p_sum(sum(ux(:,:,2))) + p_sum(sum(ux(:,:,nz-1))))*delta_u
-    utau_new = find_utau(utau, umatch, zmatch, Re) 
-    utau = utau_new 
+    do j = 1,decomp%zsz(2)
+        do i = 1,decomp%zsz(1)
+            umatch = ux(i,j,1)*delta_u
+            utau_new = find_utau(utau_do(i,j), umatch, zmatch, Re)
+            utau_do(i,j) = utau_new
+        end do 
+    end do 
+    do j = 1,decomp%zsz(2)
+        do i = 1,decomp%zsz(1)
+            umatch = ux(i,j,decomp%zsz(3))*delta_u
+            utau_new = find_utau(utau_up(i,j), umatch, zmatch, Re)
+            utau_up(i,j) = utau_new
+        end do 
+    end do 
    
     ! STEP 2: Get ubc
-    ubc = utau*get_musker_profile(zfirst*utau*Re)                
+    ubc_do = utau_do*get_musker_profile(zfirst*utau_do*Re)                
+    ubc_up = utau_up*get_musker_profile(zfirst*utau_up*Re)                
 
     ! STEP 3: Compute BC for bottom
     uxB = ux(:,:,2)
     uyB = uy(:,:,2)
     uzB = sqrt(uxB*uxB + uyB*uyB)
-    uxB = uxB*ubc/(uzB*delta_u + 1.d-18)
-    uyB = uyB*ubc/(uzB*delta_u + 1.d-18)
+    uxB = uxB*ubc_do/(uzB*delta_u + 1.d-18)
+    uyB = uyB*ubc_do/(uzB*delta_u + 1.d-18)
     uzB = zero
 
     ! STEP 3: Compute BC for top
     uxT = ux(:,:,nz-1)
     uyT = uy(:,:,nz-1)
     uzT = sqrt(uxT*uxT + uyT*uyT)
-    uxT = uxT*ubc/(uzT*delta_u + 1.d-18)
-    uyT = uyT*ubc/(uzT*delta_u + 1.d-18)
+    uxT = uxT*ubc_up/(uzT*delta_u + 1.d-18)
+    uyT = uyT*ubc_up/(uzT*delta_u + 1.d-18)
     uzT = zero
     
-    !uxB = 0.d0
-    !uyB = 0.d0
-    !uzB = 0.d0
-
-    !uxT = 0.d0
-    !uyT = 0.d0
-    !uzT = 0.d0
 
 end subroutine 
 
@@ -240,6 +257,7 @@ subroutine getWall_nut(decomp, delta_nu, ux, uy, uz, Re, tau_B, tau_T)
     use d3q19_channel3D
     use constants, only: three, half
     use exits, only: message
+    use get_initial_profiles_channel, only: get_musker_gradient
     implicit none
 
     type(decomp_info), intent(in) :: decomp
@@ -247,21 +265,33 @@ subroutine getWall_nut(decomp, delta_nu, ux, uy, uz, Re, tau_B, tau_T)
     real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
     real(rkind), intent(in) :: Re
     real(rkind), dimension(:,:), intent(out) :: tau_B, tau_T 
-    real(rkind) :: yp, dudy_wall, Va, nu_t
     real(rkind), parameter :: kappa = 0.384d0
+    real(rkind) :: nu_t, Va
+    integer :: i, j
 
-    yp = zfirst*utau*Re
-    dudy_wall = (2939515020475289880216614001228638060544.d0/(125.d0*(519229685836867467736034237096533489.d0*yp*yp &
-              & - 4231721939638177189649975113492201472.d0*yp + 44824125224070191636923425342095360000.d0)) + &
-              & (60760.d0*yp*yp - 1132089.d0*yp + 10832423.d0)/(250.d0*(245.d0*yp*yp - 39.d0*yp + 100.d0*yp*yp*yp + 91160.d0)))
+    if (.not. allocated(utau_up)) then
+        call allocate_WM_arrays(decomp)
+    end if 
+    
+    yp_up = zfirst*utau_up*Re
+    yp_do = zfirst*utau_do*Re
 
-    dudy_wall = dudy_wall*utau*utau*Re
-    Va = 1.d0 - exp(-yp/26.d0)
-    nu_t = (((kappa*zfirst*Va)**2)*dudy_wall + (one/Re))/delta_nu
+    dudz_up = get_musker_gradient(yp_up)*utau_up*utau_up*Re 
+    dudz_do = get_musker_gradient(yp_do)*utau_do*utau_do*Re 
 
-    call message(2,"Wall nu_t:", nu_t)
-    tau_B = nu_t*three + half 
-    tau_T = nu_t*three + half 
+    do j = 1,decomp%zsz(2)
+        do i = 1,decomp%zsz(1)
+
+            Va = 1.d0 - exp(-yp_do(i,j)/26.d0)
+            nu_t = (((kappa*zfirst*Va)**2)*dudz_do(i,j) + (one/Re))/delta_nu
+            tau_B(i,j) = nu_t*three + half 
+            
+            Va = 1.d0 - exp(-yp_up(i,j)/26.d0)
+            nu_t = (((kappa*zfirst*Va)**2)*dudz_up(i,j) + (one/Re))/delta_nu
+            tau_T(i,j) = nu_t*three + half 
+
+        end do 
+    end do 
 
 end subroutine 
 
@@ -279,20 +309,23 @@ subroutine getBodyForce(decomp, time, delta_u, delta_t, ux, uy, uz, Fx, Fy, Fz)
     real(rkind) :: Fconst, fact_time, zfact
     integer :: i, j, k
 
-    Fconst = Fbase*(1.d0 - exp(-lambda2_force*time))
-    fact_time = exp(-lambda1_force*time)
+    !Fconst = Fbase*(1.d0 - exp(-lambda2_force*time))
+    !fact_time = exp(-lambda1_force*time)
 
-    do k = decomp%zst(3),decomp%zen(3)
-        zfact = Force_amp*(tan(z(k)) + 0.2d0*cos(1.d0*z(k)*2.d0*pi))
-        do j = decomp%zst(2),decomp%zen(2)
-            !$omp simd
-            do i = decomp%zst(1),decomp%zen(1)
-                Fx(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (Fconst +  zfact*fact_time*sin(kx_force*x(i)*2.d0*pi/Lx))*delta_t/delta_u
-                Fy(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (zfact*fact_time*sin(kx_force*y(j)*2.d0*pi/Ly))*delta_t/delta_u
-            end do 
-        end do 
-    end do 
+
+    !do k = decomp%zst(3),decomp%zen(3)
+    !    zfact = Force_amp*(tan(z(k)) + 0.2d0*cos(1.d0*z(k)*2.d0*pi))
+    !    do j = decomp%zst(2),decomp%zen(2)
+    !        !$omp simd
+    !        do i = decomp%zst(1),decomp%zen(1)
+    !            Fx(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (Fconst +  zfact*fact_time*sin(kx_force*x(i)*2.d0*pi/Lx))*delta_t/delta_u
+    !            Fy(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (zfact*fact_time*sin(kx_force*y(j)*2.d0*pi/Ly))*delta_t/delta_u
+    !        end do 
+    !    end do 
+    !end do 
     Fz = 0.d0 
+    Fy = 0.d0
+    Fx = Fbase*delta_t/delta_u
 end subroutine 
 
 

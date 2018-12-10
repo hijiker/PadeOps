@@ -30,6 +30,7 @@ program test_d3q19_uniform
 
     lattice%isZPeriodic = .true. 
     lattice%useConstantBodyForce = .false. 
+    lattice%CollisionModel = 2
 
     call lattice%init(testing=.true.)
 

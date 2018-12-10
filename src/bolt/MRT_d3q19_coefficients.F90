@@ -72,7 +72,7 @@ contains
         
         real(rkind) :: lambda_visc
 
-        lambda_visc = tau_visc 
+        lambda_visc = one/tau_visc 
         
         lambda_vec(1 ) = zero 
         lambda_vec(2 ) = 1.19d0 

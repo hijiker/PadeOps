@@ -13,13 +13,13 @@ program test_d3q19_womersley
 
     type(d3q19) :: lattice 
     integer :: ierr
-    integer :: nx = 1, ny = 1, nz = 80
+    integer :: nx = 1, ny = 1, nz = 320
     real(rkind) :: Tstop = 10._rkind
     real(rkind) :: tmp, accum
-    real(rkind) :: beta_t = 0.2_rkind
+    real(rkind) :: beta_t = 0.1_rkind
     real(rkind) :: ForceX
     real(rkind) :: umax_expect 
-    integer :: stop_step = 1250
+    integer :: stop_step = 2500
 
     call MPI_Init(ierr)               
     
@@ -38,7 +38,7 @@ program test_d3q19_womersley
     lattice%Re = Reynolds_number
    
 
-    lattice%CollisionModel = 1
+    lattice%CollisionModel = 2
     lattice%isZPeriodic = .false. 
     lattice%useConstantBodyForce = .true.
     lattice%Fx = p0

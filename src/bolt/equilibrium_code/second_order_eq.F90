@@ -29,8 +29,21 @@
                + (Qtensor(2,1)*ux + Qtensor(2,2)*uy + Qtensor(2,3)*uz)*ForceY &
                + (Qtensor(3,1)*ux + Qtensor(3,2)*uy + Qtensor(3,3)*uz)*ForceZ
       
-        second = zero    
         Fsource = w(fidx)*(onebycsq*first + oneby2c4*second)
 
     end subroutine 
     
+    pure subroutine get_ForceSource_Guo(ux,uy,uz,ForceX,ForceY,ForceZ,fidx,Fsource)
+        real(rkind), intent(in) :: ux, uy, uz, ForceX, ForceY, ForceZ
+        integer, intent(in) :: fidx
+        real(rkind), intent(out) :: Fsource
+
+        real(rkind) :: first, second, cdotu
+
+        first = (cx(fidx) - ux)*ForceX + (cy(fidx) - uy)*ForceY + (cz(fidx) - uz)*ForceZ
+        cdotu = (cx(fidx)*ux + cy(fidx)*uy + cz(fidx)*uz) 
+        second = cdotu*(cx(fidx)*ForceX + cy(fidx)*ForceY + cz(fidx)*ForceZ)
+
+        Fsource = w(fidx)*(onebycsq*first + onebycsq*onebycsq*second)
+
+    end subroutine 
