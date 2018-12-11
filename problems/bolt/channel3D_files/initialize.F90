@@ -90,29 +90,39 @@ contains
 
 end module 
 
-module wall_module_routines
+module wall_model_routines
     use kind_parameters, only: rkind
-
+    implicit none
 contains
-    pure function find_utau(utau_guess, umatch, zmatch, Re) result(utau)
-        use get_initial_profiles_channel, only: get_musker_profile
+    pure function find_utau(utau_guess, umatch, zmatch, Re) result(ustar)
         real(rkind), intent(in) :: utau_guess, umatch, zmatch, Re
         real(rkind) :: zplus, utau_diff, up1, utaunew
-        real(rkind) :: utau
+        real(rkind) :: ustar, ustar_g, g, dgdus
 
-        utau_diff = utau_guess
-        utau = utau_guess
-        do while (utau_diff > 1.d-8)
-            zplus = zmatch*utau*Re 
-            up1 = get_musker_profile(zplus)                
-            utaunew = umatch/up1
-            utau_diff = abs(utaunew - utau)
-            utau = utaunew
+        !utau_diff = utau_guess
+        !utau = utau_guess
+        ustar = utau_guess
+        call g_ustar(ustar,umatch,zmatch,Re,g,dgdus)
+        do while (abs(g) > 1.d-8)
+            ustar = ustar - g/(dgdus+1E-14)
+            call g_ustar(ustar,umatch,zmatch,Re,g,dgdus)
         end do 
-
         ! print*, tau
     end function 
 
+    pure subroutine g_ustar(ustar,umatch,zmatch,Re,g,dgdus)
+        use get_initial_profiles_channel, only: get_musker_profile, get_musker_gradient
+        real(rkind), intent(in) :: ustar, umatch, zmatch, Re
+        real(rkind), intent(out) :: g, dgdus
+        real(rkind) :: yp, up, dupdyp
+
+        yp = zmatch*Re*ustar
+        up = get_musker_profile(yp)
+        dupdyp = get_musker_gradient(yp)
+        
+        g = umatch - ustar*up
+        dgdus = -up - ustar*Re*zmatch*dupdyp
+    end subroutine 
 end module 
 
 
@@ -182,6 +192,8 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
     zmatch = z(2) + 1.d0 
     zfirst = z(1) + 1.d0 
     mfact = 1.d0/real(nx*ny,rkind)
+        
+    call allocate_WM_arrays(decomp)
 
 end subroutine 
 
@@ -192,7 +204,7 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     use constants, only: zero
     use d3q19_channel3D
     use reductions, only: p_sum 
-    use wall_module_routines 
+    use wall_model_routines 
     use get_initial_profiles_channel, only: get_musker_profile
     use constants, only: zero
     use mpi 
@@ -206,9 +218,9 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     real(rkind) :: utau_new, umatch
     integer :: ierr, i, j
 
-    if (.not. allocated(utau_up)) then
-        call allocate_WM_arrays(decomp)
-    end if 
+    !if (.not. allocated(utau_up)) then
+    !    call allocate_WM_arrays(decomp)
+    !end if 
 
     ! STEP 1: Get utau
     do j = 1,decomp%zsz(2)
@@ -269,9 +281,10 @@ subroutine getWall_nut(decomp, delta_nu, ux, uy, uz, Re, tau_B, tau_T)
     real(rkind) :: nu_t, Va
     integer :: i, j
 
-    if (.not. allocated(utau_up)) then
-        call allocate_WM_arrays(decomp)
-    end if 
+    !if (.not. allocated(utau_up)) then
+    !    call allocate_WM_arrays(decomp)
+    !    print*, "allocating array"
+    !end if 
     
     yp_up = zfirst*utau_up*Re
     yp_do = zfirst*utau_do*Re

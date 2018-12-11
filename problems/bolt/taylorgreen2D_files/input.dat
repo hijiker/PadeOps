@@ -1,7 +1,7 @@
 &INPUT
-nx = 64 
-ny = 64 
-nz = 64
+nx = 128 
+ny = 128 
+nz = 128
 restartSimulation = .false.
 restart_runID = 5
 restart_timeID = 10000
