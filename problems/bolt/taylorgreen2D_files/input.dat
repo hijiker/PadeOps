@@ -9,7 +9,7 @@ restartWithTau = .false.
 /
 /
 &PHYSICS
-CollisionModel = 2
+CollisionModel = 0
 useConstantBodyForce = .false. 
 useSGSmodel = .false. 
 isZPeriodic = .true. 

@@ -96,6 +96,7 @@ module d3q19mod
             procedure :: wrapup_timestep
             procedure :: update_bodyForce
 
+            procedure, private :: compute_macroscopic_hplane 
             procedure, private :: compute_tau_smag
             procedure, private :: collision_BGK 
             procedure, private :: collision_BGK_Force 
@@ -148,6 +149,8 @@ contains
         
         call this%stream()   ! Look at "d3q19_codes/d3q19_streaming.F90"
         
+        call this%compute_macroscopic()
+        
         call this%updateBCs()
         
         call this%wrapup_timestep()
@@ -172,11 +175,15 @@ contains
                 & this%vBot, this%wBot, this%uTop, this%vTop, this%wTop)
 
             call this%NEQ_BB_Reg()
+
+            call this%compute_macroscopic_hplane(1)
+            call this%compute_macroscopic_hplane(this%gp%zsz(3))
         end if 
 
     end subroutine 
 
     subroutine wrapup_timestep(this)
+        use reductions, only: p_maxval
         class(d3q19), intent(inout) :: this
 
         this%step = this%step + 1
@@ -198,7 +205,6 @@ contains
             call this%dumpVisualizationFields()
         end if 
         
-        call this%compute_macroscopic()
     end subroutine 
 
     subroutine collide(this)

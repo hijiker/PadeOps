@@ -14,7 +14,8 @@ module d3q19_channel3D
     real(rkind), parameter :: lambda2_force = 10.d0 
     real(rkind), parameter :: Fbase = 4.390402243028787 
     real(rkind), parameter :: Force_amp = 15.d0     
-    
+   
+    integer, parameter :: utau_method = 1
     real(rkind), dimension(:,:), allocatable :: utau_up, utau_do, yp_up, yp_do, dudz_up, dudz_do, ubc_up, ubc_do
 
 contains
@@ -58,9 +59,9 @@ contains
         real(rkind), parameter :: TG_scale = 2.5d0, period = 2.d0  
 
         um = utau*get_musker_profile((1.d0-abs(z))*Retau)
-        ux = um - TG_scale*cos(z*2.d0*pi/period)*sin(x*2.d0*pi/period) 
-        uy = 0.d0  
-        uz = TG_scale*sin(z*2.d0*pi/period)*cos(x*2.d0*pi/period)
+        ux = um - TG_scale*cos(z*2.d0*pi/period)*sin(x*2.d0*pi/period)*cos(y*2.d0*pi/period)
+        uy = 0.5d0*TG_scale*cos(z*2.d0*pi/period)*cos(x*2.d0*pi/period)*sin(y*2.d0*pi/period)  
+        uz = 0.5d0*TG_scale*sin(z*2.d0*pi/period)*cos(x*2.d0*pi/period)*cos(y*2.d0*pi/period)
 
         !ux = um
         !uy = 0.d0
@@ -200,7 +201,7 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     use decomp_2d, only: decomp_info
     use constants, only: zero
     use d3q19_channel3D
-    use reductions, only: p_sum 
+    use reductions, only: p_sum, p_maxval
     use wall_model_routines 
     use get_initial_profiles_channel, only: get_musker_profile
     use constants, only: zero
@@ -253,7 +254,9 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     uxT = onebydelta*(ux(:,:,nz-1)/sqrt(ux(:,:,nz-1)**2 + uy(:,:,nz-1)**2))*ubc_up
     uyT = onebydelta*(uy(:,:,nz-1)/sqrt(ux(:,:,nz-1)**2 + uy(:,:,nz-1)**2))*ubc_up
     uzT = onebydelta*zero
-    
+ 
+    print*, p_maxval((uxB/sqrt(uxB**2 + uyB**2)) - (ux(:,:,2)/sqrt(ux(:,:,2)**2 + uy(:,:,2)**2)))
+
 
 end subroutine 
 
