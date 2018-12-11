@@ -51,12 +51,11 @@ module get_initial_profiles_channel
 
 contains
 
-    pure subroutine get_prof(x,y,z,Lx,Ly,ux,uy,uz)
-        real(rkind), intent(in) :: x,y,z, Lx, Ly
+    pure subroutine get_prof(x,y,z,ux,uy,uz)
+        real(rkind), intent(in) :: x,y,z
         real(rkind), intent(out) :: ux, uy, uz
         real(rkind) :: um
-        integer :: nmodes_x, nmodes_y
-        real(rkind), parameter :: TG_scale = 1.5d0, period = 2.d0  
+        real(rkind), parameter :: TG_scale = 0.5d0, period = 2.d0  
 
         um = utau*get_musker_profile((1.d0-abs(z))*Retau)
         ux = um - TG_scale*cos(z*2.d0*pi/period)*sin(x*2.d0*pi/period) 
@@ -96,8 +95,7 @@ module wall_model_routines
 contains
     pure function find_utau(utau_guess, umatch, zmatch, Re) result(ustar)
         real(rkind), intent(in) :: utau_guess, umatch, zmatch, Re
-        real(rkind) :: zplus, utau_diff, up1, utaunew
-        real(rkind) :: ustar, ustar_g, g, dgdus
+        real(rkind) :: ustar, g, dgdus
 
         !utau_diff = utau_guess
         !utau = utau_guess
@@ -144,7 +142,7 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
     character(len=clen), intent(in) :: inputfile
     real(rkind), intent(in) :: delta_x
     real(rkind), dimension(:,:,:), intent(out) :: rho, ux, uy, uz  
-    integer :: idx, i, j, k, ii, jj 
+    integer :: i, j, k, ii, jj 
     real(rkind), dimension(:), allocatable :: zE
 
     nx = decomp%xsz(1)
@@ -178,17 +176,16 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
         do j = decomp%zst(2),decomp%zen(2)
             ii = 1
             do i = decomp%zst(1),decomp%zen(1)
-                call get_prof(x(i),y(j),z(k),Lx,Ly,ux(ii,jj,k),uy(ii,jj,k),uz(ii,jj,k))
+                call get_prof(x(i),y(j),z(k),ux(ii,jj,k),uy(ii,jj,k),uz(ii,jj,k))
                 ii = ii + 1
             end do 
             jj = jj + 1
         end do 
     end do
 
-    !ux = 1.d0
+    !ux = 0.05d0
     !uy = 0.d0
     !uz = 0.d0 
-
     zmatch = z(2) + 1.d0 
     zfirst = z(1) + 1.d0 
     mfact = 1.d0/real(nx*ny,rkind)
@@ -200,7 +197,7 @@ end subroutine
 
 subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, uyT, uzT)
     use kind_parameters, only:  rkind, clen
-    use decomp_2d, only: decomp_info, nrank 
+    use decomp_2d, only: decomp_info
     use constants, only: zero
     use d3q19_channel3D
     use reductions, only: p_sum 
@@ -216,11 +213,11 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
     real(rkind), dimension(:,:), intent(out) :: uxB, uyB, uzB, uxT, uyT, uzT
     real(rkind) :: utau_new, umatch
-    integer :: ierr, i, j
+    integer :: i, j
 
-    !if (.not. allocated(utau_up)) then
-    !    call allocate_WM_arrays(decomp)
-    !end if 
+    if (.not. allocated(utau_up)) then
+        call allocate_WM_arrays(decomp)
+    end if 
 
     ! STEP 1: Get utau
     do j = 1,decomp%zsz(2)
@@ -236,11 +233,15 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
             utau_new = find_utau(utau_up(i,j), umatch, zmatch, Re)
             utau_up(i,j) = utau_new
         end do 
-    end do 
-   
+    end do
+
+
     ! STEP 2: Get ubc
-    ubc_do = utau_do*get_musker_profile(zfirst*utau_do*Re)                
-    ubc_up = utau_up*get_musker_profile(zfirst*utau_up*Re)                
+    !ubc_do = utau_do*get_musker_profile(zfirst*utau_do*Re)                
+    !ubc_up = utau_up*get_musker_profile(zfirst*utau_up*Re)                
+    
+    ubc_do = 2.d0*get_musker_profile(zfirst*utau_do*Re)                
+    ubc_up = 2.d0*get_musker_profile(zfirst*utau_up*Re)                
 
     ! STEP 3: Compute BC for bottom
     uxB = ux(:,:,2)
@@ -322,23 +323,23 @@ subroutine getBodyForce(decomp, time, delta_u, delta_t, ux, uy, uz, Fx, Fy, Fz)
     real(rkind) :: Fconst, fact_time, zfact
     integer :: i, j, k
 
-    !Fconst = Fbase*(1.d0 - exp(-lambda2_force*time))
-    !fact_time = exp(-lambda1_force*time)
+    Fconst = Fbase*(1.d0 - exp(-lambda2_force*time))
+    fact_time = exp(-lambda1_force*time)
 
 
-    !do k = decomp%zst(3),decomp%zen(3)
-    !    zfact = Force_amp*(tan(z(k)) + 0.2d0*cos(1.d0*z(k)*2.d0*pi))
-    !    do j = decomp%zst(2),decomp%zen(2)
-    !        !$omp simd
-    !        do i = decomp%zst(1),decomp%zen(1)
-    !            Fx(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (Fconst +  zfact*fact_time*sin(kx_force*x(i)*2.d0*pi/Lx))*delta_t/delta_u
-    !            Fy(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (zfact*fact_time*sin(kx_force*y(j)*2.d0*pi/Ly))*delta_t/delta_u
-    !        end do 
-    !    end do 
-    !end do 
+    do k = decomp%zst(3),decomp%zen(3)
+        zfact = Force_amp*(tan(z(k)) + 0.2d0*cos(1.d0*z(k)*2.d0*pi))
+        do j = decomp%zst(2),decomp%zen(2)
+            !$omp simd
+            do i = decomp%zst(1),decomp%zen(1)
+                Fx(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (Fconst +  zfact*fact_time*sin(kx_force*x(i)*2.d0*pi/Lx))*delta_t/delta_u
+                Fy(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (zfact*fact_time*sin(kx_force*y(j)*2.d0*pi/Ly))*delta_t/delta_u
+            end do 
+        end do 
+    end do 
     Fz = 0.d0 
-    Fy = 0.d0
-    Fx = Fbase*delta_t/delta_u
+    !Fy = 0.d0
+    !Fx = Fbase*delta_t/delta_u
 end subroutine 
 
 

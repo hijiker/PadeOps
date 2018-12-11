@@ -10,7 +10,6 @@ contains
 
 subroutine doTemporalStuff(bgp)
     class(d3q19), intent(in) :: bgp
-    real(rkind) :: usum, vsum, wsum
     real(rkind) :: fmin, fmax
     real(rkind) :: utau_mn, ubc_mn
 

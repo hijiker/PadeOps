@@ -27,7 +27,7 @@ gradient_type = 2
 inputdir          = "/nobackup/aghate/channel3d"   ! Directory for any input files
 outputdir         = "/nobackup/aghate/channel3d"   ! Directory for all output files
 RunID             = 1
-tid_vis           = 10
+tid_vis           = 500
 tid_restart       = 1000
 /
 /
