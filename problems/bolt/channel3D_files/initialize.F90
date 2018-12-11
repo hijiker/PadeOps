@@ -55,7 +55,7 @@ contains
         real(rkind), intent(in) :: x,y,z
         real(rkind), intent(out) :: ux, uy, uz
         real(rkind) :: um
-        real(rkind), parameter :: TG_scale = 0.5d0, period = 2.d0  
+        real(rkind), parameter :: TG_scale = 2.5d0, period = 2.d0  
 
         um = utau*get_musker_profile((1.d0-abs(z))*Retau)
         ux = um - TG_scale*cos(z*2.d0*pi/period)*sin(x*2.d0*pi/period) 
@@ -212,7 +212,7 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     real(rkind), intent(in) :: Re, delta_u
     real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
     real(rkind), dimension(:,:), intent(out) :: uxB, uyB, uzB, uxT, uyT, uzT
-    real(rkind) :: utau_new, umatch
+    real(rkind) :: utau_new, umatch, onebydelta
     integer :: i, j
 
     if (.not. allocated(utau_up)) then
@@ -243,21 +243,16 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     ubc_do = 2.d0*get_musker_profile(zfirst*utau_do*Re)                
     ubc_up = 2.d0*get_musker_profile(zfirst*utau_up*Re)                
 
+    onebydelta = one/delta_u
     ! STEP 3: Compute BC for bottom
-    uxB = ux(:,:,2)
-    uyB = uy(:,:,2)
-    uzB = sqrt(uxB*uxB + uyB*uyB)
-    uxB = uxB*ubc_do/(uzB*delta_u + 1.d-18)
-    uyB = uyB*ubc_do/(uzB*delta_u + 1.d-18)
-    uzB = zero
+    uxB = onebydelta*(ux(:,:,2)/sqrt(ux(:,:,2)**2 + uy(:,:,2)**2))*ubc_do
+    uyB = onebydelta*(uy(:,:,2)/sqrt(ux(:,:,2)**2 + uy(:,:,2)**2))*ubc_do
+    uzB = onebydelta*zero
 
     ! STEP 3: Compute BC for top
-    uxT = ux(:,:,nz-1)
-    uyT = uy(:,:,nz-1)
-    uzT = sqrt(uxT*uxT + uyT*uyT)
-    uxT = uxT*ubc_up/(uzT*delta_u + 1.d-18)
-    uyT = uyT*ubc_up/(uzT*delta_u + 1.d-18)
-    uzT = zero
+    uxT = onebydelta*(ux(:,:,nz-1)/sqrt(ux(:,:,nz-1)**2 + uy(:,:,nz-1)**2))*ubc_up
+    uyT = onebydelta*(uy(:,:,nz-1)/sqrt(ux(:,:,nz-1)**2 + uy(:,:,nz-1)**2))*ubc_up
+    uzT = onebydelta*zero
     
 
 end subroutine 
@@ -282,11 +277,6 @@ subroutine getWall_nut(decomp, delta_nu, ux, uy, uz, Re, tau_B, tau_T)
     real(rkind) :: nu_t, Va
     integer :: i, j
 
-    !if (.not. allocated(utau_up)) then
-    !    call allocate_WM_arrays(decomp)
-    !    print*, "allocating array"
-    !end if 
-    
     yp_up = zfirst*utau_up*Re
     yp_do = zfirst*utau_do*Re
 
@@ -323,23 +313,23 @@ subroutine getBodyForce(decomp, time, delta_u, delta_t, ux, uy, uz, Fx, Fy, Fz)
     real(rkind) :: Fconst, fact_time, zfact
     integer :: i, j, k
 
-    Fconst = Fbase*(1.d0 - exp(-lambda2_force*time))
-    fact_time = exp(-lambda1_force*time)
+    !Fconst = Fbase*(1.d0 - exp(-lambda2_force*time))
+    !fact_time = exp(-lambda1_force*time)
 
 
-    do k = decomp%zst(3),decomp%zen(3)
-        zfact = Force_amp*(tan(z(k)) + 0.2d0*cos(1.d0*z(k)*2.d0*pi))
-        do j = decomp%zst(2),decomp%zen(2)
-            !$omp simd
-            do i = decomp%zst(1),decomp%zen(1)
-                Fx(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (Fconst +  zfact*fact_time*sin(kx_force*x(i)*2.d0*pi/Lx))*delta_t/delta_u
-                Fy(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (zfact*fact_time*sin(kx_force*y(j)*2.d0*pi/Ly))*delta_t/delta_u
-            end do 
-        end do 
-    end do 
+    !do k = decomp%zst(3),decomp%zen(3)
+    !    zfact = Force_amp*(tan(z(k)) + 0.2d0*cos(1.d0*z(k)*2.d0*pi))
+    !    do j = decomp%zst(2),decomp%zen(2)
+    !        !$omp simd
+    !        do i = decomp%zst(1),decomp%zen(1)
+    !            Fx(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (Fconst +  zfact*fact_time*sin(kx_force*x(i)*2.d0*pi/Lx))*delta_t/delta_u
+    !            Fy(i-decomp%zst(1)+1,j-decomp%zst(2)+1,k) = (zfact*fact_time*sin(kx_force*y(j)*2.d0*pi/Ly))*delta_t/delta_u
+    !        end do 
+    !    end do 
+    !end do 
     Fz = 0.d0 
-    !Fy = 0.d0
-    !Fx = Fbase*delta_t/delta_u
+    Fy = 0.d0
+    Fx = Fbase*delta_t/delta_u
 end subroutine 
 
 

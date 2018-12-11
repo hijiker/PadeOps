@@ -3,9 +3,9 @@ nx = 300
 ny = 300 
 nz = 100
 restartSimulation = .false.
-restart_runID = 5
-restart_timeID = 10000
-restartWithTau = .false. 
+restart_runID = 1
+restart_timeID = 1000
+restartWithTau = .true. 
 /
 /
 &PHYSICS
