@@ -14,7 +14,7 @@ useConstantBodyForce = .false.
 useSGSmodel = .false. 
 isZPeriodic = .true. 
 Re = 20.d0
-delta_x = 0.09817477042468d0
+delta_x = 0.049087385212341d0 
 delta_t = 0.0005d0
 /
 /
