@@ -129,13 +129,14 @@ end module
 ! called because the problem is run in testing mode. 
 subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
     use kind_parameters, only:  rkind, clen
-    use decomp_2d, only: decomp_info
+    use decomp_2d, only: decomp_info, nrank 
     use constants, only: one, zero, two
     use d3q19_channel3D
     use exits, only: message
     use gridtools, only: linspace
     use exits, only: GracefulExit
     use get_initial_profiles_channel, only: get_prof
+    use random,             only: gaussian_random
 
     implicit none
 
@@ -145,6 +146,9 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
     real(rkind), dimension(:,:,:), intent(out) :: rho, ux, uy, uz  
     integer :: i, j, k, ii, jj 
     real(rkind), dimension(:), allocatable :: zE
+    real(rkind), parameter :: Noise_Amp = 1.d-10
+    real(rkind), dimension(:,:,:), allocatable :: randArr
+    integer :: seedu = 1394, seedv = 6322, seedw = 7543
 
     nx = decomp%xsz(1)
     ny = decomp%ysz(2)
@@ -183,6 +187,19 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
             jj = jj + 1
         end do 
     end do
+   
+    allocate(randArr(size(ux,1),size(ux,2),size(ux,3)))
+    call gaussian_random(randArr,zero,one,seedu + 100*nrank)
+    ux  = ux + Noise_Amp*randArr
+    
+    call gaussian_random(randArr,zero,one,seedv + 100*nrank)
+    uy  = uy + Noise_Amp*randArr
+    
+    call gaussian_random(randArr,zero,one,seedw + 100*nrank)
+    uz  = uz + Noise_Amp*randArr
+         
+
+    deallocate(randArr)
 
     zmatch = z(2) + 1.d0 
     zfirst = z(1) + 1.d0 
@@ -251,7 +268,7 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     uxT = onebydelta*(ux(:,:,nz-1)/sqrt(ux(:,:,nz-1)**2 + uy(:,:,nz-1)**2))*ubc_up
     uyT = onebydelta*(uy(:,:,nz-1)/sqrt(ux(:,:,nz-1)**2 + uy(:,:,nz-1)**2))*ubc_up
     uzT = onebydelta*zero
- 
+
 
 end subroutine 
 
@@ -286,11 +303,11 @@ subroutine getWall_nut(decomp, delta_nu, ux, uy, uz, Re, tau_B, tau_T)
 
             Va = 1.d0 - exp(-yp_do(i,j)/26.d0)
             nu_t = (((kappa*zfirst*Va)**2)*dudz_do(i,j) + (one/Re))/delta_nu
-            tau_B(i,j) = nu_t*three + half 
+            tau_B(i,j) = (nu_t)*three + half 
             
             Va = 1.d0 - exp(-yp_up(i,j)/26.d0)
             nu_t = (((kappa*zfirst*Va)**2)*dudz_up(i,j) + (one/Re))/delta_nu
-            tau_T(i,j) = nu_t*three + half 
+            tau_T(i,j) = (nu_t)*three + half 
 
         end do 
     end do 

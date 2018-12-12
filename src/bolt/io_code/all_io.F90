@@ -79,6 +79,10 @@ subroutine dumpVisualizationFields(this)
     this%visBuff = this%uz*this%delta_u   
     call this%dumpVisBuff("wVel")
 
+    if (allocated(this%nusgs)) then
+        this%visBuff = this%nusgs*this%delta_nu
+        call this%dumpVisBuff("nSGS")
+    end if 
 end subroutine 
 
 subroutine dumpRestart(this)

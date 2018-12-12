@@ -41,9 +41,9 @@ subroutine compute_tau_smag(this)
         this%tau = (this%nusgs + this%nu)*oneByCsq + half
     end select 
 
-    call getWall_nut(this%gp, this%delta_nu, this%ux, this%uy, this%uz, this%Re, this%tau_B, this%tau_T)
-    this%tau(:,:,1) = this%tau_B
-    this%tau(:,:,this%gp%zsz(3)) = this%tau_T
+    !call getWall_nut(this%gp, this%delta_nu, this%ux, this%uy, this%uz, this%Re, this%tau_B, this%tau_T)
+    !this%tau(:,:,1) = this%tau_B
+    !this%tau(:,:,this%gp%zsz(3)) = this%tau_T
 
 end subroutine 
     
@@ -85,9 +85,9 @@ subroutine get_ddz(this,u,dudz)
     
     ! dudz
     dudz(:,:,2:nz-1) = half*(u(:,:,3:nz) - u(:,:,1:nz-2))
-    dudz(:,:,1) = (3.d0/2.d0)*u(:,:,1) + 2.d0*u(:,:,2) - 0.5d0*(u(:,:,3)) 
-    dudz(:,:,nz) = -((3.d0/2.d0)*u(:,:,nz) + 2.d0*u(:,:,nz-1) - 0.5d0*(u(:,:,nz-2)))
-    
+    dudz(:,:,1) = (-3.d0/2.d0)*u(:,:,1) + 2.d0*u(:,:,2) - 0.5d0*(u(:,:,3)) 
+    dudz(:,:,nz) = -((-3.d0/2.d0)*u(:,:,nz) + 2.d0*u(:,:,nz-1) - 0.5d0*(u(:,:,nz-2)))
+   
 end subroutine
 
 

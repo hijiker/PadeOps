@@ -15,7 +15,7 @@ useSGSmodel = .true.
 isZPeriodic = .false. 
 Re = 125000.d0  
 delta_x = 2.d-2  
-delta_t = 2.d-4 
+delta_t = 2.d-3 
 Fx = 1.721188d-03 
 Fy = 0.d0 
 Fz = 0.d0 
@@ -27,7 +27,7 @@ gradient_type = 2
 inputdir          = "/nobackup/aghate/channel3d"   ! Directory for any input files
 outputdir         = "/nobackup/aghate/channel3d"   ! Directory for all output files
 RunID             = 1
-tid_vis           = 500
+tid_vis           = 100
 tid_restart       = 1000
 /
 /
