@@ -19,7 +19,6 @@ subroutine doTemporalStuff(bgp)
     fmax = p_maxval(maxval(bgp%f))
     fmin = p_minval(minval(bgp%f))
     
-    print*, maxval(bgp%ux(:,:,1)/sqrt(bgp%ux(:,:,1)**2 + bgp%uy(:,:,1)**2) - bgp%ux(:,:,2)/sqrt(bgp%ux(:,:,2)**2 + bgp%uy(:,:,2)**2))
     
     call message(0,"Time:", bgp%getPhysTime())
     call message(0,"TIDX:", bgp%step)

@@ -12,7 +12,7 @@ module d3q19_channel3D
     real(rkind), parameter :: kx_force = 1.d0
     real(rkind), parameter :: lambda1_force = 5.d0 
     real(rkind), parameter :: lambda2_force = 10.d0 
-    real(rkind), parameter :: Fbase = 4.390402243028787 
+    real(rkind), parameter :: Fbase = 1.721188e-03 
     real(rkind), parameter :: Force_amp = 15.d0     
    
     integer, parameter :: utau_method = 1
@@ -45,10 +45,10 @@ module get_initial_profiles_channel
     
     implicit none
     private
-    public :: get_prof, get_musker_profile, get_musker_gradient
+    public :: utau, get_prof, get_musker_profile, get_musker_gradient
 
     real(rkind), parameter :: Retau = 5.185915054711403d03 
-    real(rkind), parameter :: utau = 2.095328671838570d0 
+    real(rkind), parameter :: utau = 4.148720d-02 
 
 contains
 
@@ -56,7 +56,7 @@ contains
         real(rkind), intent(in) :: x,y,z
         real(rkind), intent(out) :: ux, uy, uz
         real(rkind) :: um
-        real(rkind), parameter :: TG_scale = 2.5d0, period = 2.d0  
+        real(rkind), parameter :: TG_scale = 1.d-1, period = 2.d0  
 
         um = utau*get_musker_profile((1.d0-abs(z))*Retau)
         ux = um - TG_scale*cos(z*2.d0*pi/period)*sin(x*2.d0*pi/period)*cos(y*2.d0*pi/period)
@@ -184,9 +184,6 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
         end do 
     end do
 
-    !ux = 0.05d0
-    !uy = 0.d0
-    !uz = 0.d0 
     zmatch = z(2) + 1.d0 
     zfirst = z(1) + 1.d0 
     mfact = 1.d0/real(nx*ny,rkind)
@@ -203,7 +200,7 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     use d3q19_channel3D
     use reductions, only: p_sum, p_maxval
     use wall_model_routines 
-    use get_initial_profiles_channel, only: get_musker_profile
+    use get_initial_profiles_channel, only: utau, get_musker_profile
     use constants, only: zero
     use mpi 
     
@@ -220,29 +217,29 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
         call allocate_WM_arrays(decomp)
     end if 
 
-    ! STEP 1: Get utau
-    do j = 1,decomp%zsz(2)
-        do i = 1,decomp%zsz(1)
-            umatch = ux(i,j,1)*delta_u
-            utau_new = find_utau(utau_do(i,j), umatch, zmatch, Re)
-            utau_do(i,j) = utau_new
-        end do 
-    end do 
-    do j = 1,decomp%zsz(2)
-        do i = 1,decomp%zsz(1)
-            umatch = ux(i,j,decomp%zsz(3))*delta_u
-            utau_new = find_utau(utau_up(i,j), umatch, zmatch, Re)
-            utau_up(i,j) = utau_new
-        end do 
-    end do
+    !! STEP 1: Get utau
+    !do j = 1,decomp%zsz(2)
+    !    do i = 1,decomp%zsz(1)
+    !        umatch = ux(i,j,1)*delta_u
+    !        utau_new = find_utau(utau_do(i,j), umatch, zmatch, Re)
+    !        utau_do(i,j) = utau_new
+    !    end do 
+    !end do 
+    !do j = 1,decomp%zsz(2)
+    !    do i = 1,decomp%zsz(1)
+    !        umatch = ux(i,j,decomp%zsz(3))*delta_u
+    !        utau_new = find_utau(utau_up(i,j), umatch, zmatch, Re)
+    !        utau_up(i,j) = utau_new
+    !    end do 
+    !end do
 
+    utau_do = utau
+    utau_up = utau
 
     ! STEP 2: Get ubc
-    !ubc_do = utau_do*get_musker_profile(zfirst*utau_do*Re)                
-    !ubc_up = utau_up*get_musker_profile(zfirst*utau_up*Re)                
+    ubc_do = utau_do*get_musker_profile(zfirst*utau_do*Re)                
+    ubc_up = utau_up*get_musker_profile(zfirst*utau_up*Re)                
     
-    ubc_do = 2.d0*get_musker_profile(zfirst*utau_do*Re)                
-    ubc_up = 2.d0*get_musker_profile(zfirst*utau_up*Re)                
 
     onebydelta = one/delta_u
     ! STEP 3: Compute BC for bottom
@@ -255,8 +252,6 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     uyT = onebydelta*(uy(:,:,nz-1)/sqrt(ux(:,:,nz-1)**2 + uy(:,:,nz-1)**2))*ubc_up
     uzT = onebydelta*zero
  
-    print*, p_maxval((uxB/sqrt(uxB**2 + uyB**2)) - (ux(:,:,2)/sqrt(ux(:,:,2)**2 + uy(:,:,2)**2)))
-
 
 end subroutine 
 
