@@ -26,25 +26,25 @@
         do j = 1,this%gp%zsz(2)
             !$omp simd
             do i = 1,this%gp%zsz(1)
-                this%rho(i,j,k) = this%f(i,j,k,1 ) + this%f(i,j,k,2 ) + this%f(i,j,k,3 ) + this%f(i,j,k,4 ) &
-                             &  + this%f(i,j,k,5 ) + this%f(i,j,k,6 ) + this%f(i,j,k,7 ) + this%f(i,j,k,8 ) &
-                             &  + this%f(i,j,k,9 ) + this%f(i,j,k,10) + this%f(i,j,k,11) + this%f(i,j,k,12) &
-                             &  + this%f(i,j,k,13) + this%f(i,j,k,14) + this%f(i,j,k,15) + this%f(i,j,k,16) &
-                             &  + this%f(i,j,k,17) + this%f(i,j,k,18) + this%f(i,j,k,19)
+                this%rho(i,j,k) = this%f(i,j,k,velOrder(1 )) + this%f(i,j,k,velOrder(2 )) + this%f(i,j,k,velOrder(3 )) + this%f(i,j,k,velOrder(4 )) &
+                             &  + this%f(i,j,k,velOrder(5 )) + this%f(i,j,k,velOrder(6 )) + this%f(i,j,k,velOrder(7 )) + this%f(i,j,k,velOrder(8 )) &
+                             &  + this%f(i,j,k,velOrder(9 )) + this%f(i,j,k,velOrder(10)) + this%f(i,j,k,velOrder(11)) + this%f(i,j,k,velOrder(12)) &
+                             &  + this%f(i,j,k,velOrder(13)) + this%f(i,j,k,velOrder(14)) + this%f(i,j,k,velOrder(15)) + this%f(i,j,k,velOrder(16)) &
+                             &  + this%f(i,j,k,velOrder(17)) + this%f(i,j,k,velOrder(18)) + this%f(i,j,k,velOrder(19))
 
                 onebyrho = one/(this%rho(i,j,k))
 
-                this%ux(i,j,k)  = (this%f(i,j,k,1 ) - this%f(i,j,k,2 ) + this%f(i,j,k,7 ) - this%f(i,j,k,8 ) &
-                             &  +  this%f(i,j,k,9 ) - this%f(i,j,k,10) + this%f(i,j,k,13) - this%f(i,j,k,14) &
-                             &  +  this%f(i,j,k,15) - this%f(i,j,k,16) + half*this%Fx(i,j,k))*onebyrho                           
+                this%ux(i,j,k)  = (this%f(i,j,k,velOrder(1 )) - this%f(i,j,k,velOrder(2 )) + this%f(i,j,k,velOrder(7 )) - this%f(i,j,k,velOrder(8 )) &
+                             &  +  this%f(i,j,k,velOrder(9 )) - this%f(i,j,k,velOrder(10)) + this%f(i,j,k,velOrder(13)) - this%f(i,j,k,velOrder(14)) &
+                             &  +  this%f(i,j,k,velOrder(15)) - this%f(i,j,k,velOrder(16)) + half*this%Fx(i,j,k))*onebyrho                           
                                                                                                            
-                this%uy(i,j,k)  = (this%f(i,j,k,3 ) - this%f(i,j,k,4 ) + this%f(i,j,k,7 ) - this%f(i,j,k,8 ) &
-                             &  +  this%f(i,j,k,11) - this%f(i,j,k,12) - this%f(i,j,k,13) + this%f(i,j,k,14) &
-                             &  +  this%f(i,j,k,17) - this%f(i,j,k,18) + half*this%Fy(i,j,k))*onebyrho                           
+                this%uy(i,j,k)  = (this%f(i,j,k,velOrder(3 )) - this%f(i,j,k,velOrder(4 )) + this%f(i,j,k,velOrder(7 )) - this%f(i,j,k,velOrder(8 )) &
+                             &  +  this%f(i,j,k,velOrder(11)) - this%f(i,j,k,velOrder(12)) - this%f(i,j,k,velOrder(13)) + this%f(i,j,k,velOrder(14)) &
+                             &  +  this%f(i,j,k,velOrder(17)) - this%f(i,j,k,velOrder(18)) + half*this%Fy(i,j,k))*onebyrho                           
                                                                                                            
-                this%uz(i,j,k)  = (this%f(i,j,k,5 ) - this%f(i,j,k,6 ) + this%f(i,j,k,9 ) - this%f(i,j,k,10) &
-                             &  +  this%f(i,j,k,11) - this%f(i,j,k,12) - this%f(i,j,k,15) + this%f(i,j,k,16) &
-                             &  -  this%f(i,j,k,17) + this%f(i,j,k,18) + half*this%Fz(i,j,k))*onebyrho 
+                this%uz(i,j,k)  = (this%f(i,j,k,velOrder(5 )) - this%f(i,j,k,velOrder(6 )) + this%f(i,j,k,velOrder(9 )) - this%f(i,j,k,velorder(10)) &
+                             &  +  this%f(i,j,k,velOrder(11)) - this%f(i,j,k,velOrder(12)) - this%f(i,j,k,velOrder(15)) + this%f(i,j,k,velorder(16)) &
+                             &  -  this%f(i,j,k,velOrder(17)) + this%f(i,j,k,velOrder(18)) + half*this%Fz(i,j,k))*onebyrho 
            
             end do 
         end do 

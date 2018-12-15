@@ -13,7 +13,7 @@
         ! WARNING: This subroutine has not been optimized for cache usage.
         
         ! Population 1:
-        vid = 1
+        vid = velOrder(1)
         call MPI_IRECV(this%YZslice,ny*nz,mpirkind,this%XneighLeft,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%YZsendb = this%f(nx,:,:,vid)
         call MPI_ISEND(this%YZsendb,ny*nz,mpirkind,this%XneighRight,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -24,7 +24,7 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 2: 
-        vid = 2
+        vid = velOrder(2)
         call MPI_IRECV(this%YZslice,ny*nz,mpirkind,this%XneighRight,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%YZsendb = this%f(1,:,:,vid)
         call MPI_ISEND(this%YZsendb,ny*nz,mpirkind,this%XneighLeft,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -35,7 +35,7 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 3: 
-        vid = 3
+        vid = velOrder(3)
         call MPI_IRECV(this%XZslice,nx*nz,mpirkind,this%YneighDown,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%XZsendb = this%f(:,ny,:,vid)
         call MPI_ISEND(this%XZsendb,nx*nz,mpirkind,this%YneighUp,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -46,7 +46,7 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 4: 
-        vid = 4
+        vid = velOrder(4)
         call MPI_IRECV(this%XZslice,nx*nz,mpirkind,this%YneighUp,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%XZsendb = this%f(:,1,:,vid)
         call MPI_ISEND(this%XZsendb,nx*nz,mpirkind,this%YneighDown,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -57,19 +57,19 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 5: 
-        vid = 5
+        vid = velOrder(5)
         this%XYslice = this%f(:,:,nz,vid)
         this%f(:,:,2:nz,vid) = this%f(:,:,1:nz-1,vid)
         this%f(:,:,1,vid) = this%XYslice
 
         ! Population 6: 
-        vid = 6
+        vid = velOrder(6)
         this%XYslice = this%f(:,:,1,vid)
         this%f(:,:,1:nz-1,vid) = this%f(:,:,2:nz,vid)
         this%f(:,:,nz,vid) = this%XYslice
 
         ! Population 7: 
-        vid = 7
+        vid = velOrder(7)
         call MPI_IRECV(this%YZslice,ny*nz,mpirkind,this%XneighLeft,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%YZsendb = this%f(nx,:,:,vid)
         call MPI_ISEND(this%YZsendb,ny*nz,mpirkind,this%XneighRight,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -92,7 +92,7 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 8: 
-        vid = 8
+        vid = velOrder(8)
         call MPI_IRECV(this%YZslice,ny*nz,mpirkind,this%XneighRight,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%YZsendb = this%f(1,:,:,vid)
         call MPI_ISEND(this%YZsendb,ny*nz,mpirkind,this%XneighLeft,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -115,7 +115,7 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 9: 
-        vid = 9
+        vid = velOrder(9)
         call MPI_IRECV(this%YZslice,ny*nz,mpirkind,this%XneighLeft,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%YZsendb = this%f(nx,:,:,vid)
         call MPI_ISEND(this%YZsendb,ny*nz,mpirkind,this%XneighRight,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -129,7 +129,7 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 10: 
-        vid = 10
+        vid = velOrder(10)
         call MPI_IRECV(this%YZslice,ny*nz,mpirkind,this%XneighRight,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%YZsendb = this%f(1,:,:,vid)
         call MPI_ISEND(this%YZsendb,ny*nz,mpirkind,this%XneighLeft,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -143,7 +143,7 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 11: 
-        vid = 11
+        vid = velOrder(11)
         call MPI_IRECV(this%XZslice,nx*nz,mpirkind,this%YneighDown,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%XZsendb = this%f(:,ny,:,vid)
         call MPI_ISEND(this%XZsendb,nx*nz,mpirkind,this%YneighUp,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -157,7 +157,7 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 12: 
-        vid = 12
+        vid = velOrder(12)
         call MPI_IRECV(this%XZslice,nx*nz,mpirkind,this%YneighUp,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%XZsendb = this%f(:,1,:,vid)
         call MPI_ISEND(this%XZsendb,nx*nz,mpirkind,this%YneighDown,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -171,7 +171,7 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 13: 
-        vid = 13
+        vid = velOrder(13)
         call MPI_IRECV(this%YZslice,ny*nz,mpirkind,this%XneighLeft,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%YZsendb = this%f(nx,:,:,vid)
         call MPI_ISEND(this%YZsendb,ny*nz,mpirkind,this%XneighRight,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -195,7 +195,7 @@
         
 
         ! Population 14: 
-        vid = 14
+        vid = velOrder(14)
         call MPI_IRECV(this%YZslice,ny*nz,mpirkind,this%XneighRight,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%YZsendb = this%f(1,:,:,vid)
         call MPI_ISEND(this%YZsendb,ny*nz,mpirkind,this%XneighLeft,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -219,7 +219,7 @@
         
 
         ! Population 15:
-        vid = 15
+        vid = velOrder(15)
         call MPI_IRECV(this%YZslice,ny*nz,mpirkind,this%XneighLeft,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%YZsendb = this%f(nx,:,:,vid)
         call MPI_ISEND(this%YZsendb,ny*nz,mpirkind,this%XneighRight,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -233,7 +233,7 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 16:
-        vid = 16
+        vid = velOrder(16)
         call MPI_IRECV(this%YZslice,ny*nz,mpirkind,this%XneighRight,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%YZsendb = this%f(1,:,:,vid)
         call MPI_ISEND(this%YZsendb,ny*nz,mpirkind,this%XneighLeft,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -247,7 +247,7 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 17:
-        vid = 17
+        vid = velOrder(17)
         call MPI_IRECV(this%XZslice,nx*nz,mpirkind,this%YneighDown,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%XZsendb = this%f(:,ny,:,vid)
         call MPI_ISEND(this%XZsendb,nx*nz,mpirkind,this%YneighUp,tag,MPI_COMM_WORLD,send_req1,ierr)
@@ -261,7 +261,7 @@
         call mpi_barrier(mpi_comm_world, ierr)
 
         ! Population 18:
-        vid = 18
+        vid = velOrder(18)
         call MPI_IRECV(this%XZslice,nx*nz,mpirkind,this%YneighUp,tag,MPI_COMM_WORLD,recv_req1,ierr)
         this%XZsendb = this%f(:,1,:,vid)
         call MPI_ISEND(this%XZsendb,nx*nz,mpirkind,this%YneighDown,tag,MPI_COMM_WORLD,send_req1,ierr)

@@ -7,7 +7,7 @@ module d3q19mod
     implicit none
 
     private
-    public :: d3q19, test_lattice_definition 
+    public :: d3q19, test_lattice_definition, velOrder 
 
     integer, parameter :: nvels = 19
     real(rkind), parameter :: o18 = 1._rkind/18._rkind
@@ -18,19 +18,30 @@ module d3q19mod
     real(rkind), parameter :: mon  = -one
     real(rkind), parameter :: zer  =  zero 
 
-
-    real(rkind), dimension(nvels), parameter :: w  = [o18,o18,o18,o18,o18,o18,o36,o36,o36,o36,o36,o36,o36,o36,o36,o36,o36,o36,o3 ]
-    real(rkind), dimension(nvels), parameter :: cx = [pon,mon,zer,zer,zer,zer,pon,mon,pon,mon,zer,zer,pon,mon,pon,mon,zer,zer,zer]
-    real(rkind), dimension(nvels), parameter :: cy = [zer,zer,pon,mon,zer,zer,pon,mon,zer,zer,pon,mon,mon,pon,zer,zer,pon,mon,zer]
-    real(rkind), dimension(nvels), parameter :: cz = [zer,zer,zer,zer,pon,mon,zer,zer,pon,mon,pon,mon,zer,zer,mon,pon,mon,pon,zer]
+    !                !                                    1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+    !real(rkind), dimension(nvels), parameter :: w  = [o18,o18,o18,o18,o18,o18,o36,o36,o36,o36,o36,o36,o36,o36,o36,o36,o36,o36,o3 ]
+    !real(rkind), dimension(nvels), parameter :: cx = [pon,mon,zer,zer,zer,zer,pon,mon,pon,mon,zer,zer,pon,mon,pon,mon,zer,zer,zer]
+    !real(rkind), dimension(nvels), parameter :: cy = [zer,zer,pon,mon,zer,zer,pon,mon,zer,zer,pon,mon,mon,pon,zer,zer,pon,mon,zer]
+    !real(rkind), dimension(nvels), parameter :: cz = [zer,zer,zer,zer,pon,mon,zer,zer,pon,mon,pon,mon,zer,zer,mon,pon,mon,pon,zer]
+    !integer, dimension(9), parameter :: fparallel = [1,2,3,4,7,8,13,14,19]
+    !integer, dimension(5), parameter :: fplus     = [5,9,11,16,18]
+    !integer, dimension(5), parameter :: fminus    = [6,10,12,15,17]
+    !integer, dimension(nvels), parameter :: velOrder = [ 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19] 
+    
+                 !                                    1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+    real(rkind), dimension(nvels), parameter :: w  = [ o3,o18,o18,o18,o36,o36,o36,o36,o36,o36,o18,o18,o18,o36,o36,o36,o36,o36,o36]
+    real(rkind), dimension(nvels), parameter :: cx = [zer,mon,zer,zer,mon,mon,mon,mon,zer,zer,pon,zer,zer,pon,pon,pon,pon,zer,zer]
+    real(rkind), dimension(nvels), parameter :: cy = [zer,zer,mon,zer,mon,pon,zer,zer,mon,mon,zer,pon,zer,pon,mon,zer,zer,pon,pon]
+    real(rkind), dimension(nvels), parameter :: cz = [zer,zer,zer,mon,zer,zer,mon,pon,mon,pon,zer,zer,pon,zer,zer,pon,mon,pon,mon]
+    integer, dimension(9), parameter :: fparallel = [1 ,2 ,3 ,5 ,6 ,11,12,14,15]
+    integer, dimension(5), parameter :: fplus     = [13,16,18, 8,10]
+    integer, dimension(5), parameter :: fminus    = [4 ,7 , 9,17,19]
+    integer, dimension(nvels), parameter :: velOrder = [11, 2,12, 3,13, 4,14, 5,16, 7,18, 9,15, 6,17, 8,19,10, 1]
 
     real(rkind), parameter :: csq = 1._rkind/3._rkind
     real(rkind), parameter :: onebycsq = 3._rkind
     real(rkind), parameter :: oneby2c4 = 9._rkind/2._rkind
 
-    integer, dimension(9), parameter :: fparallel = [1,2,3,4,7,8,13,14,19]
-    integer, dimension(5), parameter :: fplus     = [5,9,11,16,18]
-    integer, dimension(5), parameter :: fminus    = [6,10,12,15,17]
 
     real(rkind), parameter :: C_smag = 0.16_rkind 
     real(rkind), parameter :: C_smag_sq = C_smag*C_smag
@@ -113,7 +124,7 @@ module d3q19mod
             procedure, private :: get_processor_topo
             procedure, private :: allocate_lattice_memory
             procedure, private :: read_inputfile
-
+            
             procedure, private :: get_ddx
             procedure, private :: get_ddy
             procedure, private :: get_ddz

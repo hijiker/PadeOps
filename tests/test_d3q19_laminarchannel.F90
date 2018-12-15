@@ -37,7 +37,7 @@ program test_d3q19_laminarchannel
 
     lattice%isZPeriodic = .false. 
     lattice%useConstantBodyForce = .true.
-    lattice%CollisionModel = 2
+    lattice%CollisionModel = 0
 
     call lattice%init(testing=.true.)
     call lattice%update_bodyForce(Force)
