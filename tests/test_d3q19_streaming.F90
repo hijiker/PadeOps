@@ -1,7 +1,7 @@
 #include "test_bolt_files/d3q19_hooks.F90"       
 
 program test_d3q19_streaming
-    use d3q19mod, only: d3q19,test_lattice_definition
+    use d3q19mod, only: d3q19,velorder
     use kind_parameters, only: rkind
     use mpi
     use reductions, only: p_sum
@@ -57,7 +57,7 @@ program test_d3q19_streaming
     vid = 1
     accum = 0.d0 
     do while (vid < 20)
-        tmp = p_sum(lattice%f(:,:,:,vid)/lattice%f(:,:,:,19))
+        tmp = p_sum(lattice%f(:,:,:,velorder(vid))/lattice%f(:,:,:,velorder(19)))
         call message(0, "Velocity index", vid)
         call message(1, "Error", abs(tmp - trueSum(vid))/tmp)
         call message("--------------------")
