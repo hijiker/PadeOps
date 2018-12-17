@@ -169,14 +169,14 @@ subroutine getWallBC_bolt(decomp, Re, delta_u, ux, uy, uz, uxB, uyB, uzB, uxT, u
     real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
     real(rkind), dimension(:,:), intent(out) :: uxB, uyB, uzB, uxT, uyT, uzT
     integer :: nz
-
+    real(rkind), parameter :: bc_error_forced = 0.0d0 
     nz = size(ux,3)
 
-    uxB = utrue(:,:,1)
+    uxB = utrue(:,:,1) + bc_error_forced  
     uyB = vtrue(:,:,1) 
     uzB = wtrue(:,:,1) 
 
-    uxT = utrue(:,:,nz)
+    uxT = utrue(:,:,nz)+ bc_error_forced 
     uyT = vtrue(:,:,nz)
     uzT = wtrue(:,:,nz)
 
@@ -214,6 +214,7 @@ subroutine getBodyForce(decomp, time, delta_u, delta_t, ux, uy, uz, Fx, Fy, Fz)
     real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
     real(rkind), dimension(:,:,:), intent(out) :: Fx, Fy, Fz 
 
+    ! Not called in any of the tests 
 
     Fx = 0.d0 
     Fy = 0.d0

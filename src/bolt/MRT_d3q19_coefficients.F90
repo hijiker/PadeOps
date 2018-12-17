@@ -1,6 +1,8 @@
 module MRT_D3Q19_coefficients
     use kind_parameters, only: rkind
     use constants,       only: zero 
+    
+    logical, parameter :: useBulkViscosity = .false. 
 
     integer, parameter :: nvels = 19
     real(rkind), dimension(19,19), parameter :: Mmat = reshape([  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0, &
@@ -58,8 +60,12 @@ contains
 
         lambda_visc = one/tau_visc 
         
-        lambda_vec(1 ) = zero 
-        lambda_vec(2 ) = 1.19d0 
+        lambda_vec(1 ) = zero
+        if (useBulkViscosity) then
+            lambda_vec(2 ) = 1.19d0  
+        else
+            lambda_vec(2 ) = lambda_visc 
+        end if 
         lambda_vec(3 ) = 1.4d0
         lambda_vec(4 ) = zero
         lambda_vec(5 ) = 1.2d0

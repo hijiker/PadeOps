@@ -71,9 +71,22 @@ end subroutine
 
 
 pure subroutine compute_Meq(this,rho,ux,uy,uz)
+    use MRT_D3Q19_coefficients, only: Mmat
     class(d3q19), intent(inout) :: this
     real(rkind), intent(in) :: rho, ux, uy, uz
-    
+    !real(rkind), dimension(nvels) :: feq
+    !integer :: idx, i
+
+    !!$omp simd
+    !do idx = 1,nvels
+    !    call get_Feq_2ndOrder(ux,uy,uz,rho,idx,this%Qtensor(:,:,idx),feq(idx))
+    !end do 
+    !
+    !this%meq_mrt = zero  
+    !do i = 1,nvels
+    !    this%meq_mrt = this%meq_mrt + feq(i)*Mmat(:,i) 
+    !end do 
+
     this%meq_mrt(1 ) = rho
     this%meq_mrt(2 ) = -11*rho + 19*rho*(ux*ux + uy*uy + uz*uz)
     this%meq_mrt(3 ) = 3*rho - (11.d0/2.d0)*rho*(ux*ux + uy*uy + uz*uz)
