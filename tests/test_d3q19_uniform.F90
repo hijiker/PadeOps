@@ -7,7 +7,7 @@ program test_d3q19_uniform
     use reductions, only: p_maxval
     use exits, only: message
     use constants, only: one, ten
-    use d3q19_testing, only: testing_type, utrue, vtrue, wtrue  
+    use d3q19_testing, only: mvec_mrt_uniform, testing_type, utrue, vtrue, wtrue  
     implicit none
 
     type(d3q19) :: lattice 
@@ -40,6 +40,11 @@ program test_d3q19_uniform
           & + abs(lattice%uy*lattice%delta_u - vtrue) + abs(lattice%uz*lattice%delta_u - wtrue))
 
     call message(0,"ERROR ACCUMULATED:", accum)
+    
+    if (lattice%CollisionModel == 2) then
+        accum = accum + p_maxval(maxval(abs(lattice%m_mrt - mvec_mrt_uniform)))
+    end if 
+
     if (accum > 1.d-13) then
         call message(1,"TEST FAILED.")
     else

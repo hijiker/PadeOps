@@ -91,6 +91,8 @@ module d3q19mod
         real(rkind), dimension(:), allocatable :: z1d_send, z1d_recv
         integer :: XneighLeft, XneighRight, YneighDown, YneighUp
 
+        real(rkind), dimension(nvels) :: m_mrt, f_mrt, lambda_mrt, meq_mrt, force_mrt, Mf_mrt    
+
         contains
             procedure :: init
             procedure :: destroy
@@ -124,7 +126,13 @@ module d3q19mod
             procedure, private :: get_processor_topo
             procedure, private :: allocate_lattice_memory
             procedure, private :: read_inputfile
-            
+           
+            procedure, private :: fspace_to_mspace
+            procedure, private :: mspace_to_fspace   
+            procedure, private :: transform_Force_to_mspace 
+            procedure, private :: compute_Meq 
+
+ 
             procedure, private :: get_ddx
             procedure, private :: get_ddy
             procedure, private :: get_ddz

@@ -1,37 +1,32 @@
 subroutine collision_MRT_Force(this)
     use MRT_D3Q19_coefficients, only: get_MRT_lambda 
     class(d3q19), intent(inout) :: this
-    real(rkind), dimension(nvels) :: mvec, ftmp, lambda_vec, meq, Force, Mf
     integer :: i, j, k, idx
 
     do k = 1,this%gp%zsz(3)
         do j = 1,this%gp%zsz(2)
             do i = 1,this%gp%zsz(1)
-                ftmp(2:nvels) = this%f(i,j,k,1:nvels-1)
-                ftmp(1) = this%f(i,j,k,nvels)
-                !ftmp = this%f(i,j,k,:)
+                this%f_mrt = this%f(i,j,k,:)
 
-                call fspace_to_mspace(ftmp,mvec)
+                call this%fspace_to_mspace()
                 
-                call get_ForceSource_Guo(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
-                        & this%Fx(i,j,k), this%Fy(i,j,k), this%Fz(i,j,k), nvels,  Force(1))
                 !$omp simd
-                do idx = 1,nvels-1 
+                do idx = 1,nvels 
                         call get_ForceSource_Guo(this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k), &
-                                & this%Fx(i,j,k), this%Fy(i,j,k), this%Fz(i,j,k), idx, Force(idx+1))
-                end do 
-                call transform_Force_to_mspace(Force,Mf)
+                                & this%Fx(i,j,k), this%Fy(i,j,k), this%Fz(i,j,k), idx, this%force_mrt(idx))
+                end do
+ 
+                call this%transform_Force_to_mspace()
                 
-                call get_MRT_lambda(this%tau(i,j,k), lambda_vec)
-                call compute_Meq(this%rho(i,j,k),this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k),meq)
+                call get_MRT_lambda(this%tau(i,j,k), this%lambda_mrt)
+                
+                call this%compute_Meq(this%rho(i,j,k),this%ux(i,j,k),this%uy(i,j,k),this%uz(i,j,k))
 
-                mvec = (one - lambda_vec)*mvec + lambda_vec*meq + (one - half*lambda_vec)*Mf
+                this%m_mrt = (one - this%lambda_mrt)*this%m_mrt + this%lambda_mrt*this%meq_mrt + (one - half*this%lambda_mrt)*this%Mf_mrt
                 
-                call mspace_to_fspace(mvec,ftmp)
+                call this%mspace_to_fspace()
                 
-                !this%f(i,j,k,:) = ftmp
-                this%f(i,j,k,1:nvels-1) = ftmp(2:nvels)
-                this%f(i,j,k,nvels) = ftmp(1)
+                this%f(i,j,k,:) = this%f_mrt
             end do
         end do 
     end do
@@ -39,67 +34,64 @@ subroutine collision_MRT_Force(this)
 
 end subroutine
 
-pure subroutine fspace_to_mspace(f,mvec)
-    use MRT_D3Q19_coefficients, only: M
-    real(rkind), dimension(nvels), intent(in) :: f
-    real(rkind), dimension(nvels), intent(out) :: mvec
+pure subroutine fspace_to_mspace(this)
+    use MRT_D3Q19_coefficients, only: Mmat
+    class(d3q19), intent(inout) :: this
     integer :: i
     
-    mvec = zero 
+    this%m_mrt = zero 
     do i = 1,nvels
-        mvec = mvec+ f(i)*M(:,i) 
+        this%m_mrt = this%m_mrt+ this%f_mrt(i)*Mmat(:,i) 
     end do 
 end subroutine 
 
-pure subroutine mspace_to_fspace(mvec,f)
+pure subroutine mspace_to_fspace(this)
     use MRT_D3Q19_coefficients, only: Minv
-    real(rkind), dimension(nvels), intent(in) :: mvec 
-    real(rkind), dimension(nvels), intent(out) :: f
+    class(d3q19), intent(inout) :: this
     integer :: i
 
-    f = zero
+    this%f_mrt = zero
     do i = 1,nvels
-        f = f + mvec(i)*Minv(:,i) 
+        this%f_mrt = this%f_mrt + this%m_mrt(i)*Minv(:,i) 
     end do
 
 end subroutine 
 
-pure subroutine transform_Force_to_mspace(Force,Mf)
-    use MRT_D3Q19_coefficients, only: M
-    real(rkind), dimension(nvels), intent(in) :: Force
-    real(rkind), dimension(nvels), intent(out) :: Mf
+pure subroutine transform_Force_to_mspace(this)
+    use MRT_D3Q19_coefficients, only: Mmat
+    class(d3q19), intent(inout) :: this
     integer :: i
     
-    Mf = zero 
+    this%Mf_mrt = zero 
     do i = 1,nvels
-        Mf = Mf + Force(i)*M(:,i) 
+        this%Mf_mrt = this%Mf_mrt + this%force_mrt(i)*Mmat(:,i) 
     end do 
 
 end subroutine 
 
 
-pure subroutine compute_Meq(rho,ux,uy,uz,meq)
+pure subroutine compute_Meq(this,rho,ux,uy,uz)
+    class(d3q19), intent(inout) :: this
     real(rkind), intent(in) :: rho, ux, uy, uz
-    real(rkind), dimension(nvels), intent(out) :: meq
     
-    meq(1 ) = rho
-    meq(2 ) = -11*rho + 19*rho*(ux*ux + uy*uy + uz*uz)
-    meq(3 ) = 3*rho - (11.d0/2.d0)*rho*(ux*ux + uy*uy + uz*uz)
-    meq(4 ) = rho*ux
-    meq(5 ) = -(2.d0/3.d0)*rho*ux
-    meq(6 ) = rho*uy
-    meq(7 ) = -(2.d0/3.d0)*rho*uy
-    meq(8 ) = rho*uz
-    meq(9 ) = -(2.d0/3.d0)*rho*uz
-    meq(10) = 2*rho*ux*ux - rho*uy*uy - rho*uz*uz
-    meq(11) = -rho*ux*ux + 0.5d0*uy*uy + 0.5d0*uz*uz
-    meq(12) = rho*uy*uy - rho*uz*uz
-    meq(13) = -0.5d0*rho*uy*uy + 0.5d0*rho*uz*uz
-    meq(14) = rho*ux*uy
-    meq(15) = rho*uz*uy
-    meq(16) = rho*ux*uz
-    meq(17) = zero
-    meq(18) = zero
-    meq(19) = zero
+    this%meq_mrt(1 ) = rho
+    this%meq_mrt(2 ) = -11*rho + 19*rho*(ux*ux + uy*uy + uz*uz)
+    this%meq_mrt(3 ) = 3*rho - (11.d0/2.d0)*rho*(ux*ux + uy*uy + uz*uz)
+    this%meq_mrt(4 ) = rho*ux
+    this%meq_mrt(5 ) = -(2.d0/3.d0)*rho*ux
+    this%meq_mrt(6 ) = rho*uy
+    this%meq_mrt(7 ) = -(2.d0/3.d0)*rho*uy
+    this%meq_mrt(8 ) = rho*uz
+    this%meq_mrt(9 ) = -(2.d0/3.d0)*rho*uz
+    this%meq_mrt(10) = 2*rho*ux*ux - rho*uy*uy - rho*uz*uz
+    this%meq_mrt(11) = -rho*ux*ux + 0.5d0*uy*uy + 0.5d0*uz*uz
+    this%meq_mrt(12) = rho*uy*uy - rho*uz*uz
+    this%meq_mrt(13) = -0.5d0*rho*uy*uy + 0.5d0*rho*uz*uz
+    this%meq_mrt(14) = rho*ux*uy
+    this%meq_mrt(15) = rho*uz*uy
+    this%meq_mrt(16) = rho*ux*uz
+    this%meq_mrt(17) = zero
+    this%meq_mrt(18) = zero
+    this%meq_mrt(19) = zero
 
 end subroutine

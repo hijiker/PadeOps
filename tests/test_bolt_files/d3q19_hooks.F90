@@ -9,7 +9,7 @@ module d3q19_testing
     real(rkind) :: omega = 2._rkind
     real(rkind) :: p0 = 48.225744d0
     real(rkind), dimension(:), allocatable :: z
-
+    real(rkind), dimension(19) :: mvec_mrt_uniform 
 contains
     subroutine get_womersley_exact(y,omega,nu,t, u)
         use constants, only: imi, two
@@ -39,6 +39,32 @@ contains
 
 
     end subroutine 
+
+    subroutine compute_mtrue_d3q19(rho, ux, uy, uz)
+        use constants, only: zero 
+        real(rkind), intent(in) :: rho, ux, uy, uz
+
+        mvec_mrt_uniform(1 ) = rho
+        mvec_mrt_uniform(2 ) = -11*rho + 19*rho*(ux*ux + uy*uy + uz*uz)
+        mvec_mrt_uniform(3 ) = 3*rho - (11.d0/2.d0)*rho*(ux*ux + uy*uy + uz*uz)
+        mvec_mrt_uniform(4 ) = rho*ux
+        mvec_mrt_uniform(5 ) = -(2.d0/3.d0)*rho*ux
+        mvec_mrt_uniform(6 ) = rho*uy
+        mvec_mrt_uniform(7 ) = -(2.d0/3.d0)*rho*uy
+        mvec_mrt_uniform(8 ) = rho*uz
+        mvec_mrt_uniform(9 ) = -(2.d0/3.d0)*rho*uz
+        mvec_mrt_uniform(10) = 2*rho*ux*ux - rho*uy*uy - rho*uz*uz
+        mvec_mrt_uniform(11) = -rho*ux*ux + 0.5d0*uy*uy + 0.5d0*uz*uz
+        mvec_mrt_uniform(12) = rho*uy*uy - rho*uz*uz
+        mvec_mrt_uniform(13) = -0.5d0*rho*uy*uy + 0.5d0*rho*uz*uz
+        mvec_mrt_uniform(14) = rho*ux*uy
+        mvec_mrt_uniform(15) = rho*uz*uy
+        mvec_mrt_uniform(16) = rho*ux*uz
+        mvec_mrt_uniform(17) = zero
+        mvec_mrt_uniform(18) = zero
+        mvec_mrt_uniform(19) = zero
+    end subroutine 
+
 end module 
 
 ! These two subroutine are needed by d3q19 class, although they never get
@@ -73,13 +99,14 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
         allocate(wtrue(size(ux,1),size(ux,2),size(ux,3)))    
         rho = one
         ux = one
-        uy = one
+        uy = -one
         uz = one
 
         utrue = one
-        vtrue = one
+        vtrue = -one
         wtrue = one
         
+        call compute_mtrue_d3q19(rho(1,1,1), ux(1,1,1), uy(1,1,1), uz(1,1,1))
         call message(0, "Velocity initialized for TEST 1 (uniform flow)")
 
     case(2) ! Laminar channel 
@@ -103,7 +130,6 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
         wtrue = zero
         
         deallocate(z)
-
         call message(0, "Velocity initialized for TEST 2 (laminar channel)")
     case(3)
         allocate(utrue(size(ux,1),size(ux,2),size(ux,3)))    
