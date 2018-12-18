@@ -3,7 +3,7 @@ subroutine compute_tau_smag(this)
     class(d3q19), intent(inout) :: this
     integer :: i, j, k
     real(rkind) :: tmp, PiProd, SqrtTwoPiProd
-    real(rkind) :: a, b
+    real(rkind) :: a, b, tau_hat_csq, xi4
     select case (this%gradient_type)
     case (1)
         call this%compute_Pi()
@@ -11,6 +11,7 @@ subroutine compute_tau_smag(this)
             do j = 1,this%gp%zsz(2)
                 !$omp simd
                 do i = 1,this%gp%zsz(1)
+                    ! use previous nu_sgs
                     tmp = one/(this%tau(i,j,k)*csq)
                     PiProd = this%PiTensor(1,i,j,k)*this%PiTensor(1,i,j,k) &
                            + this%PiTensor(4,i,j,k)*this%PiTensor(4,i,j,k) &
@@ -42,6 +43,8 @@ subroutine compute_tau_smag(this)
     
     case (3)
         call this%compute_Pi()
+        tau_hat_csq = (this%nu/csq + half)*csq
+        
         do k = 1,this%gp%zsz(3)
             do j = 1,this%gp%zsz(2)
                 !$omp simd
@@ -54,11 +57,12 @@ subroutine compute_tau_smag(this)
                            + two*this%PiTensor(5,i,j,k)*this%PiTensor(5,i,j,k)
                     
                     SqrtTwoPiProd = sqrt(2.d0*PiProd)
-                    a = this%rho(i,j,k)*this%nu
-                    b = 2.d0*SqrtTwoPiProd*this%rho(i,j,k)*(1.d0/9.d0)
-                    tmp = (-a + sqrt(a*a + b*C_smag_four))/(b*C_smag_four)
 
-                    this%nusgs(i,j,k) = tmp*C_smag_sq*SqrtTwoPiProd
+                    a = this%rho(i,j,k)*tau_hat_csq
+                    b = 2.d0*SqrtTwoPiProd*this%rho(i,j,k)
+
+                    xi4 = -half*(-a + sqrt(a*a + b*C_smag_sq))/(b*C_smag_sq)
+                    this%nusgs(i,j,k) = xi4*xi4*C_smag_sq*SqrtTwoPiProd
                     this%tau(i,j,k) = (this%nusgs(i,j,k)+this%nu)*oneByCsq + half 
                 end do 
             end do 
