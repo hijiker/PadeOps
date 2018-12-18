@@ -4,7 +4,7 @@ ny = 300
 nz = 100
 restartSimulation = .false.
 restart_runID = 1
-restart_timeID = 1000
+restart_timeID = 3000
 restartWithTau = .true. 
 /
 /
@@ -20,13 +20,13 @@ Fx = 1.721188d-03
 Fy = 0.d0 
 Fz = 0.d0 
 useSpaceTimeBodyForce = .true. 
-gradient_type = 2 
+gradient_type = 1
 /
 /
 &IO
 inputdir          = "/nobackup/aghate/channel3d"   ! Directory for any input files
 outputdir         = "/nobackup/aghate/channel3d"   ! Directory for all output files
-RunID             = 1
+RunID             = 5
 tid_vis           = 100
 tid_restart       = 1000
 /

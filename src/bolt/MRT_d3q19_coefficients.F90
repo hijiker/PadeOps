@@ -2,7 +2,7 @@ module MRT_D3Q19_coefficients
     use kind_parameters, only: rkind
     use constants,       only: zero 
     
-    logical, parameter :: useBulkViscosity = .false. 
+    logical, parameter :: useBulkViscosity = .true. 
 
     integer, parameter :: nvels = 19
     real(rkind), dimension(19,19), parameter :: Mmat = reshape([  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0,  1.d0, &

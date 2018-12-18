@@ -45,6 +45,7 @@ module d3q19mod
 
     real(rkind), parameter :: C_smag = 0.16_rkind 
     real(rkind), parameter :: C_smag_sq = C_smag*C_smag
+    real(rkind), parameter :: C_smag_four = C_smag**4
 
     type :: d3q19
 

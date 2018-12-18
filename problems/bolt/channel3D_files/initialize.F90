@@ -56,7 +56,7 @@ contains
         real(rkind), intent(in) :: x,y,z
         real(rkind), intent(out) :: ux, uy, uz
         real(rkind) :: um
-        real(rkind), parameter :: TG_scale = 1.d-1, period = 2.d0  
+        real(rkind), parameter :: TG_scale = 5.d-2, period = 2.d0  
 
         um = utau*get_musker_profile((1.d0-abs(z))*Retau)
         ux = um - TG_scale*cos(z*2.d0*pi/period)*sin(x*2.d0*pi/period)*cos(y*2.d0*pi/period)
@@ -98,15 +98,12 @@ contains
         real(rkind), intent(in) :: utau_guess, umatch, zmatch, Re
         real(rkind) :: ustar, g, dgdus
 
-        !utau_diff = utau_guess
-        !utau = utau_guess
         ustar = utau_guess
         call g_ustar(ustar,umatch,zmatch,Re,g,dgdus)
         do while (abs(g) > 1.d-8)
             ustar = ustar - g/(dgdus+1E-14)
             call g_ustar(ustar,umatch,zmatch,Re,g,dgdus)
         end do 
-        ! print*, tau
     end function 
 
     pure subroutine g_ustar(ustar,umatch,zmatch,Re,g,dgdus)
@@ -146,7 +143,7 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
     real(rkind), dimension(:,:,:), intent(out) :: rho, ux, uy, uz  
     integer :: i, j, k, ii, jj 
     real(rkind), dimension(:), allocatable :: zE
-    real(rkind), parameter :: Noise_Amp = 1.d-10
+    real(rkind), parameter :: Noise_Amp = 1.d-15
     real(rkind), dimension(:,:,:), allocatable :: randArr
     integer :: seedu = 1394, seedv = 6322, seedw = 7543
 
