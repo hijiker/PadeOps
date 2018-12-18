@@ -45,7 +45,6 @@ module d3q19mod
 
     real(rkind), parameter :: C_smag = 0.16_rkind 
     real(rkind), parameter :: C_smag_sq = C_smag*C_smag
-    real(rkind), parameter :: C_smag_four = C_smag**4
 
     type :: d3q19
 
@@ -282,6 +281,13 @@ contains
                         this%Pitensor(4,i,j,k) = this%Pitensor(4,i,j,k) + cy(idx)*cy(idx)*(fneq + half*Fvals(idx))
                         this%Pitensor(5,i,j,k) = this%Pitensor(5,i,j,k) + cy(idx)*cz(idx)*(fneq + half*Fvals(idx))
                         this%Pitensor(6,i,j,k) = this%Pitensor(6,i,j,k) + cz(idx)*cz(idx)*(fneq + half*Fvals(idx))
+                        
+                        !this%Pitensor(1,i,j,k) = this%Pitensor(1,i,j,k) + this%Qtensor(1,1,idx)*(fneq + half*Fvals(idx))
+                        !this%Pitensor(2,i,j,k) = this%Pitensor(2,i,j,k) + this%Qtensor(1,2,idx)*(fneq + half*Fvals(idx))
+                        !this%Pitensor(3,i,j,k) = this%Pitensor(3,i,j,k) + this%Qtensor(1,3,idx)*(fneq + half*Fvals(idx))
+                        !this%Pitensor(4,i,j,k) = this%Pitensor(4,i,j,k) + this%Qtensor(2,2,idx)*(fneq + half*Fvals(idx))
+                        !this%Pitensor(5,i,j,k) = this%Pitensor(5,i,j,k) + this%Qtensor(2,3,idx)*(fneq + half*Fvals(idx))
+                        !this%Pitensor(6,i,j,k) = this%Pitensor(6,i,j,k) + this%Qtensor(3,3,idx)*(fneq + half*Fvals(idx))
                     end do
                 end do
             end do 

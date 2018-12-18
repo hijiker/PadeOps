@@ -20,7 +20,7 @@ Fx = 1.721188d-03
 Fy = 0.d0 
 Fz = 0.d0 
 useSpaceTimeBodyForce = .true. 
-gradient_type = 1
+gradient_type = 3
 /
 /
 &IO
