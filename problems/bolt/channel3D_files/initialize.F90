@@ -143,7 +143,7 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
     real(rkind), dimension(:,:,:), intent(out) :: rho, ux, uy, uz  
     integer :: i, j, k, ii, jj 
     real(rkind), dimension(:), allocatable :: zE
-    real(rkind), parameter :: Noise_Amp = 1.d-15
+    real(rkind), parameter :: Noise_Amp = 0.d0
     real(rkind), dimension(:,:,:), allocatable :: randArr
     integer :: seedu = 1394, seedv = 6322, seedw = 7543
 

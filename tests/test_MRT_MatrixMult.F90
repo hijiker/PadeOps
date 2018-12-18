@@ -1,7 +1,7 @@
 program test_MRT_matrixMult
     use kind_parameters, only: rkind
     use timer, only: tic, toc
-    use MRT_D3Q19_coefficients, only: M, Minv
+    use MRT_D3Q19_coefficients, only: Mmat, Minv
     use constants, only: zero 
     use random
     use mpi 
@@ -25,7 +25,7 @@ program test_MRT_matrixMult
         ftmp = f(iter,:)
         mvec = zero 
         do i = 1,nvels
-            mvec = mvec+ ftmp(i)*M(:,i) 
+            mvec = mvec+ ftmp(i)*Mmat(:,i) 
         end do 
 
         ! Do collision
@@ -43,7 +43,7 @@ program test_MRT_matrixMult
     call tic()
     do iter = 1,nnodes
         ftmp = f(iter,:)
-        mvec = matmul(M,ftmp)
+        mvec = matmul(Mmat,ftmp)
 
         ! Do collision
         ftmp = matmul(Minv,mvec)
