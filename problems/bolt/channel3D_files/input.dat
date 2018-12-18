@@ -2,9 +2,9 @@
 nx = 300 
 ny = 300 
 nz = 100
-restartSimulation = .false.
-restart_runID = 1
-restart_timeID = 3000
+restartSimulation = .true.
+restart_runID = 5
+restart_timeID = 2000
 restartWithTau = .true. 
 /
 /
