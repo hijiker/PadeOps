@@ -4,7 +4,7 @@ ny = 300
 nz = 100
 restartSimulation = .true.
 restart_runID = 5
-restart_timeID = 2000
+restart_timeID = 3000
 restartWithTau = .true. 
 /
 /
