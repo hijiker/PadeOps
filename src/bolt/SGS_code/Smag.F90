@@ -47,7 +47,7 @@ subroutine compute_tau_smag(this)
         
         do k = 1,this%gp%zsz(3)
             do j = 1,this%gp%zsz(2)
-                !$omp simd
+                ! !$omp simd
                 do i = 1,this%gp%zsz(1)
                     PiProd = this%PiTensor(1,i,j,k)*this%PiTensor(1,i,j,k) &
                            + this%PiTensor(4,i,j,k)*this%PiTensor(4,i,j,k) &
@@ -60,8 +60,7 @@ subroutine compute_tau_smag(this)
 
                     a = this%rho(i,j,k)*tau_hat_csq
                     b = 2.d0*SqrtTwoPiProd*this%rho(i,j,k)
-
-                    xi4 = -half*(-a + sqrt(a*a + b*C_smag_sq))/(b*C_smag_sq)
+                    xi4 = -half*(-a + sqrt(a*a + b*C_smag_sq))/(b*C_smag_sq + 1.d-12)
                     this%nusgs(i,j,k) = xi4*xi4*C_smag_sq*SqrtTwoPiProd
                     this%tau(i,j,k) = (this%nusgs(i,j,k)+this%nu)*oneByCsq + half 
                 end do 
@@ -70,10 +69,11 @@ subroutine compute_tau_smag(this)
 
     end select 
 
-    call getWall_nut(this%gp, this%delta_nu, this%ux, this%uy, this%uz, this%Re, this%tau_B, this%tau_T)
-    this%tau(:,:,1) = this%tau_B
-    this%tau(:,:,this%gp%zsz(3)) = this%tau_T
-
+    if (.not. this%iszperiodic) then
+        call getWall_nut(this%gp, this%delta_nu, this%ux, this%uy, this%uz, this%Re, this%tau_B, this%tau_T)
+        this%tau(:,:,1) = this%tau_B
+        this%tau(:,:,this%gp%zsz(3)) = this%tau_T
+    end if 
 end subroutine 
     
 subroutine compute_duidxj(this)

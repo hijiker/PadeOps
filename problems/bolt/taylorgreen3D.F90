@@ -14,7 +14,7 @@ program taylorgreen_3D
     type(d3q19) :: lattice 
     character(len=clen) :: inputfile 
     integer :: ierr
-    real(rkind) :: t_stop = 20.d0  
+    real(rkind) :: t_stop = 10.d0  
 
     call MPI_Init(ierr)               !<-- Begin MPI
     call GETARG(1,inputfile)          !<-- Get the location of the input file

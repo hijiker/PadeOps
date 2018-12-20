@@ -198,7 +198,6 @@ subroutine getWall_nut(decomp, delta_nu, ux, uy, uz, Re, tau_B, tau_T)
 end subroutine 
 
 subroutine getBodyForce(decomp, time, delta_u, delta_t, ux, uy, uz, Fx, Fy, Fz)
-    use d3q19_channel3D
     use kind_parameters, only:  rkind, clen
     use decomp_2d, only: decomp_info
     use constants, only: pi
