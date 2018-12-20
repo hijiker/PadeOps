@@ -113,10 +113,16 @@ subroutine get_ddz(this,u,dudz)
     nz = this%gp%zsz(3)
     
     ! dudz
-    dudz(:,:,2:nz-1) = half*(u(:,:,3:nz) - u(:,:,1:nz-2))
-    dudz(:,:,1) = (-3.d0/2.d0)*u(:,:,1) + 2.d0*u(:,:,2) - 0.5d0*(u(:,:,3)) 
-    dudz(:,:,nz) = -((-3.d0/2.d0)*u(:,:,nz) + 2.d0*u(:,:,nz-1) - 0.5d0*(u(:,:,nz-2)))
-   
+    if (this%iszPeriodic) then
+        dudz(:,:,2:nz-1) = half*(u(:,:,3:nz) - u(:,:,1:nz-2))
+        dudz(:,:,1)      = half*(u(:,:,2)    - u(:,:,nz)    )
+        dudz(:,:,nz)     = half*(u(:,:,1)    - u(:,:,nz-1)  )
+    else
+        dudz(:,:,2:nz-1) = half*(u(:,:,3:nz) - u(:,:,1:nz-2))
+        dudz(:,:,1) = (-3.d0/2.d0)*u(:,:,1) + 2.d0*u(:,:,2) - 0.5d0*(u(:,:,3)) 
+        dudz(:,:,nz) = -((-3.d0/2.d0)*u(:,:,nz) + 2.d0*u(:,:,nz-1) - 0.5d0*(u(:,:,nz-2)))
+    end if 
+
 end subroutine
 
 
