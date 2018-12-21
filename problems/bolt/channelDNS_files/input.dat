@@ -29,7 +29,7 @@ c_smag = 0.16d0
 inputdir          = "/nobackup/aghate/channelDNS"   ! Directory for any input files
 outputdir         = "/nobackup/aghate/channelDNS"   ! Directory for all output files
 RunID             = 1
-tid_vis           = 1000
+tid_vis           = 2000
 tid_restart       = 10000
 /
 /

@@ -32,16 +32,17 @@ contains
     pure subroutine get_prof(xG,yG,zG,ux,uy,uz)
         real(rkind), intent(in) :: xG,yG,zG
         real(rkind), intent(out) :: ux, uy, uz
-        real(rkind) :: Lx, um, nmodes, lambda, Amp 
+        real(rkind) :: Lx, Ly, um, nmodes, lambda, Amp 
 
         um = utau*get_musker_profile((1.d0-abs(zG))*Retau)
         nmodes = 2
         lambda = 0.5d0
         Amp = 0.05d0
-        Lx = 6.d0 
+        Lx = 6.d0
+        Ly = 3.d0 
 
-        uz = Amp*((nmodes*2*pi/Lx)*exp(-lambda*(zG - 1)*(zG + 1))*((zG - 1)**2)*((zG + 1)**2)*sin(nmodes*xG*2*pi/Lx))
-        ux = um + Amp*(2*zG*exp(-lambda*(zG**2 - 1))*cos(nmodes*xG*2*pi/Lx)*(zG**2 - 1)*(lambda - lambda*zG**2 + 2))
+        uz = Amp*((nmodes*2*pi/Lx)*exp(-lambda*(zG - 1)*(zG + 1))*((zG - 1)**2)*((zG + 1)**2)*sin(nmodes*xG*2*pi/Lx))*sin(nmodes*yG*2*pi/Ly)
+        ux = um + Amp*(2*zG*exp(-lambda*(zG**2 - 1))*cos(nmodes*xG*2*pi/Lx)*sin(nmodes*yG*2*pi/Ly)*(zG**2 - 1)*(lambda - lambda*zG**2 + 2))
         uy = 0.d0
         
     end subroutine 
