@@ -1,0 +1,34 @@
+&INPUT
+nx = 900 
+ny = 450 
+nz = 301
+restartSimulation = .false.
+restart_runID = 1
+restart_timeID = 5000
+restartWithTau = .true. 
+/
+/
+&PHYSICS
+CollisionModel = 2
+useConstantBodyForce = .true. 
+useSGSmodel = .true. 
+isZPeriodic = .false. 
+Re = 1.d04 
+delta_x = 0.006666666666667 
+delta_t = 0.000666666666667
+Fx = 2.953879d-03 
+Fy = 0.d0 
+Fz = 0.d0 
+useSpaceTimeBodyForce = .true. 
+gradient_type = 3
+c_smag = 0.16d0 
+/
+/
+&IO
+inputdir          = "/nobackup/aghate/channelDNS"   ! Directory for any input files
+outputdir         = "/nobackup/aghate/channelDNS"   ! Directory for all output files
+RunID             = 1
+tid_vis           = 1000
+tid_restart       = 10000
+/
+/

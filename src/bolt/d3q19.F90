@@ -43,8 +43,6 @@ module d3q19mod
     real(rkind), parameter :: oneby2c4 = 9._rkind/2._rkind
 
 
-    real(rkind), parameter :: C_smag = 0.16_rkind 
-    real(rkind), parameter :: C_smag_sq = C_smag*C_smag
 
     type :: d3q19
 
@@ -72,6 +70,8 @@ module d3q19mod
         integer :: step, gradient_type = 1 
 
         logical :: useSGSmodel = .false., useSpaceTimeBodyForce = .false. 
+        
+        real(rkind) :: C_smag = 0.16_rkind, C_smag_sq 
 
         ! Finite difference 
         real(rkind), dimension(:,:,:,:,:), allocatable :: duidxj

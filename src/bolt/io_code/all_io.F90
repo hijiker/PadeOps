@@ -7,10 +7,10 @@ subroutine read_inputfile(this, inputfile)
         character(len=clen) :: inputdir, outputdir
         logical ::  isZPeriodic=.false., useConstantBodyForce, useSGSmodel=.false.
         logical :: restartSimulation=.false., useSpaceTimeBodyForce = .false., restartWithTau = .false. 
-        real(rkind) :: Re = 10.d0, delta_t = 0.1d0, delta_x = 0.2d0, Fx = zero, Fy = zero, Fz = zero
+        real(rkind) :: Re = 10.d0, delta_t = 0.1d0, delta_x = 0.2d0, Fx = zero, Fy = zero, Fz = zero, c_smag = 0.16d0
 
         namelist /INPUT/ nx, ny, nz, restartSimulation, restart_runID, restart_timeID, restartwithTau
-        namelist /PHYSICS/ CollisionModel, useConstantBodyForce, useSGSmodel, isZperiodic, Re, delta_x, delta_t, Fx, Fy, Fz, useSpaceTimeBodyForce, gradient_type 
+        namelist /PHYSICS/ CollisionModel, useConstantBodyForce, useSGSmodel, isZperiodic, Re, delta_x, delta_t, Fx, Fy, Fz, useSpaceTimeBodyForce, gradient_type, c_smag 
         namelist /IO/ inputdir, outputdir, RunID, tid_vis, tid_restart 
 
         open(unit=123, file=trim(inputfile), form='FORMATTED', iostat=ierr)
@@ -32,6 +32,7 @@ subroutine read_inputfile(this, inputfile)
         this%useSpaceTimeBodyForce = useSpaceTimeBodyForce
         this%restartWithTau = restartwithTau
         this%gradient_type = gradient_type
+        this%c_smag = c_smag
 
         this%nx = nx
         this%ny = ny

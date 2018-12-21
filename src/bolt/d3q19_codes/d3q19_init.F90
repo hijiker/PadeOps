@@ -64,15 +64,15 @@
             this%step = 0
         end if 
 
-
-
         if (this%useSpaceTimeBodyForce) then
             call getBodyForce(this%gp, this%getPhysTime(),this%delta_u, this%delta_t, &
               &  this%ux, this%uy, this%uz, this%Fx, this%Fy, this%Fz)
         end if 
         
         call this%compute_macroscopic()
-            
+    
+        this%c_smag_sq = this%c_smag**2
+        
         if (this%useSGSmodel) then
             call this%compute_tau_smag()
         end if

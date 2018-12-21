@@ -20,7 +20,7 @@ subroutine compute_tau_smag(this)
                            + two*this%PiTensor(3,i,j,k)*this%PiTensor(3,i,j,k) &
                            + two*this%PiTensor(5,i,j,k)*this%PiTensor(5,i,j,k)
                     
-                    this%nusgs(i,j,k) = C_Smag_sq*sqrt(two*PiProd)*tmp
+                    this%nusgs(i,j,k) = this%c_smag_sq*sqrt(two*PiProd)*tmp
                     
                     this%tau(i,j,k) = (this%nusgs(i,j,k)+this%nu)*oneByCsq + half 
                 end do 
@@ -37,7 +37,7 @@ subroutine compute_tau_smag(this)
         this%rbuffz1 = this%rbuffz1 + two*this%rbuffz2*this%rbuffz2
         this%rbuffz2 = half*(this%duidxj(:,:,:,2,3) + this%duidxj(:,:,:,3,2))
         this%rbuffz1 = this%rbuffz1 + two*this%rbuffz2*this%rbuffz2
-        this%nusgs = C_smag_sq*sqrt(two*this%rbuffz1)
+        this%nusgs = this%c_smag_sq*sqrt(two*this%rbuffz1)
         
         this%tau = (this%nusgs + this%nu)*oneByCsq + half
     
@@ -60,8 +60,8 @@ subroutine compute_tau_smag(this)
 
                     a = this%rho(i,j,k)*tau_hat_csq
                     b = 2.d0*SqrtTwoPiProd*this%rho(i,j,k)
-                    xi4 = -half*(-a + sqrt(a*a + b*C_smag_sq))/(b*C_smag_sq + 1.d-12)
-                    this%nusgs(i,j,k) = xi4*xi4*C_smag_sq*SqrtTwoPiProd
+                    xi4 = -half*(-a + sqrt(a*a + b*this%c_smag_sq))/(b*this%c_smag_sq + 1.d-12)
+                    this%nusgs(i,j,k) = xi4*xi4*this%c_smag_sq*SqrtTwoPiProd
                     this%tau(i,j,k) = (this%nusgs(i,j,k)+this%nu)*oneByCsq + half 
                 end do 
             end do 
