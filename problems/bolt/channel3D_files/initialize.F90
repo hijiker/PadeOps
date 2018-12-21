@@ -52,19 +52,20 @@ module get_initial_profiles_channel
 
 contains
 
-    pure subroutine get_prof(x,y,z,ux,uy,uz)
-        real(rkind), intent(in) :: x,y,z
+    pure subroutine get_prof(xG,yG,zG,ux,uy,uz)
+        real(rkind), intent(in) :: xG,yG,zG
         real(rkind), intent(out) :: ux, uy, uz
-        real(rkind) :: um
-        real(rkind), parameter :: TG_scale = 5.d-2, period = 2.d0  
+        real(rkind) :: Lx, um, nmodes, lambda, Amp 
 
-        um = utau*get_musker_profile((1.d0-abs(z))*Retau)
-        ux = um - TG_scale*cos(z*2.d0*pi/period)*sin(x*2.d0*pi/period)*cos(y*2.d0*pi/period)
-        uy = 0.5d0*TG_scale*cos(z*2.d0*pi/period)*cos(x*2.d0*pi/period)*sin(y*2.d0*pi/period)  
-        uz = 0.5d0*TG_scale*sin(z*2.d0*pi/period)*cos(x*2.d0*pi/period)*cos(y*2.d0*pi/period)
+        um = utau*get_musker_profile((1.d0-abs(zG))*Retau)
+        nmodes = 2
+        lambda = 0.5d0
+        Amp = 0.05d0
+        Lx = 6.d0 
 
-        !ux = um
-        !uy = 0.d0
+        uz = Amp*((nmodes*2*pi/Lx)*exp(-lambda*(zG - 1)*(zG + 1))*((zG - 1)**2)*((zG + 1)**2)*sin(nmodes*xG*2*pi/Lx))
+        ux = um + Amp*(2*zG*exp(-lambda*(zG**2 - 1))*cos(nmodes*xG*2*pi/Lx)*(zG**2 - 1)*(lambda - lambda*zG**2 + 2))
+        uy = 0.d0
         
     end subroutine 
 
@@ -143,7 +144,7 @@ subroutine initfields_bolt(decomp, inputfile, delta_x, rho, ux, uy, uz)
     real(rkind), dimension(:,:,:), intent(out) :: rho, ux, uy, uz  
     integer :: i, j, k, ii, jj 
     real(rkind), dimension(:), allocatable :: zE
-    real(rkind), parameter :: Noise_Amp = 0.d0
+    real(rkind), parameter :: Noise_Amp = 1.d2
     real(rkind), dimension(:,:,:), allocatable :: randArr
     integer :: seedu = 1394, seedv = 6322, seedw = 7543
 

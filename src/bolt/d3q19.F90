@@ -93,6 +93,9 @@ module d3q19mod
 
         real(rkind), dimension(nvels) :: m_mrt, f_mrt, lambda_mrt, meq_mrt, force_mrt, Mf_mrt    
 
+        logical :: EndSim = .false. 
+        integer :: step_stop = 9999999 
+
         contains
             procedure :: init
             procedure :: destroy
@@ -207,7 +210,10 @@ contains
 
         this%step = this%step + 1
 
-        if (mod(this%step,this%tid_restart)==0) then
+        if (this%step > this%step_stop) then
+            this%EndSim = .true. 
+        end if 
+        if ((mod(this%step,this%tid_restart)==0) .or. this%EndSim) then
             call this%dumpRestart()
         end if 
 
@@ -220,9 +226,10 @@ contains
               &  this%ux, this%uy, this%uz, this%Fx, this%Fy, this%Fz)
         end if 
         
-        if (mod(this%step,this%tid_vis) == 0) then
+        if ((mod(this%step,this%tid_vis) == 0) .or. this%EndSim) then
             call this%dumpVisualizationFields()
-        end if 
+        end if
+
         
     end subroutine 
 

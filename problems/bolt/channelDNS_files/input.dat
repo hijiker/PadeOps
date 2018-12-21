@@ -2,6 +2,7 @@
 nx = 900 
 ny = 450 
 nz = 301
+step_stop = 250000
 restartSimulation = .false.
 restart_runID = 1
 restart_timeID = 5000

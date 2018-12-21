@@ -14,7 +14,6 @@ program channelDNS
     type(d3q19) :: lattice 
     character(len=clen) :: inputfile 
     integer :: ierr
-    real(rkind) :: t_stop = 1.d-1 
 
     call MPI_Init(ierr)               !<-- Begin MPI
     call GETARG(1,inputfile)          !<-- Get the location of the input file
@@ -24,7 +23,7 @@ program channelDNS
     call lattice%dumpVisualizationFields()
 
     call tic()
-    do while (lattice%step<50000)
+    do while (.not. lattice%EndSim)
         call lattice%time_advance()
         call doTemporalStuff(lattice)
     end do 
