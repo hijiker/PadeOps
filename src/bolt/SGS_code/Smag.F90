@@ -4,10 +4,21 @@ subroutine compute_tau_smag(this)
     integer :: i, j, k
     real(rkind) :: tmp, PiProd, SqrtTwoPiProd
     real(rkind) :: a, b, tau_hat_csq, xi4
+    
+    integer :: kst, ken
+
+    if (this%isZPeriodic) then
+        kst = 1
+        ken = this%gp%zsz(3)
+    else
+        kst = 2
+        ken = this%gp%zsz(3) - 1
+    end if 
+
     select case (this%gradient_type)
     case (1)
         call this%compute_Pi()
-        do k = 1,this%gp%zsz(3)
+        do k = kst,ken
             do j = 1,this%gp%zsz(2)
                 !$omp simd
                 do i = 1,this%gp%zsz(1)
@@ -39,13 +50,13 @@ subroutine compute_tau_smag(this)
         this%rbuffz1 = this%rbuffz1 + two*this%rbuffz2*this%rbuffz2
         this%nusgs = this%c_smag_sq*sqrt(two*this%rbuffz1)
         
-        this%tau = (this%nusgs + this%nu)*oneByCsq + half
+        this%tau(:,:,kst:ken) = (this%nusgs(:,:,kst:ken) + this%nu)*oneByCsq + half
     
     case (3)
         call this%compute_Pi()
         tau_hat_csq = (this%nu/csq + half)*csq
         
-        do k = 1,this%gp%zsz(3)
+        do k = kst,ken
             do j = 1,this%gp%zsz(2)
                 ! !$omp simd
                 do i = 1,this%gp%zsz(1)

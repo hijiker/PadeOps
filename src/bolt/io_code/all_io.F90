@@ -4,20 +4,23 @@ subroutine read_inputfile(this, inputfile)
 
         integer :: nx, ny, nz, CollisionModel=0, restart_runID, restart_timeID, runID
         integer :: tid_vis, tid_restart, ierr, gradient_type = 1 
-        character(len=clen) :: inputdir, outputdir
-        logical ::  isZPeriodic=.false., useConstantBodyForce, useSGSmodel=.false.
+        character(len=clen) :: inputdir, outputdir, stats_dir
+        logical ::  isZPeriodic=.false., useConstantBodyForce, useSGSmodel=.false., compute_stats = .false. 
         logical :: restartSimulation=.false., useSpaceTimeBodyForce = .false., restartWithTau = .false. 
         real(rkind) :: Re = 10.d0, delta_t = 0.1d0, delta_x = 0.2d0, Fx = zero, Fy = zero, Fz = zero, c_smag = 0.16d0
-        integer :: step_stop = 999999
+        integer :: step_stop = 999999, tid_stats_dump, stats_freq
 
         namelist /INPUT/ nx, ny, nz, step_stop, restartSimulation, restart_runID, restart_timeID, restartwithTau
         namelist /PHYSICS/ CollisionModel, useConstantBodyForce, useSGSmodel, isZperiodic, Re, delta_x, delta_t, Fx, Fy, Fz, useSpaceTimeBodyForce, gradient_type, c_smag 
         namelist /IO/ inputdir, outputdir, RunID, tid_vis, tid_restart 
+        namelist /STATS/ compute_stats, tid_stats_dump, stats_freq, stats_dir  
+
 
         open(unit=123, file=trim(inputfile), form='FORMATTED', iostat=ierr)
         read(unit=123, NML=INPUT)
         read(unit=123, NML=PHYSICS)
         read(unit=123, NML=IO)
+        read(unit=123, NML=STATS)
         close(123)
 
         this%CollisionModel = CollisionModel
@@ -51,6 +54,11 @@ subroutine read_inputfile(this, inputfile)
         this%tid_vis = tid_vis
         this%tid_restart = tid_restart
 
+        this%compute_stats = compute_stats
+        this%tid_stats_dump = tid_stats_dump
+        this%stats_freq = stats_freq
+        this%stats_dir = stats_dir 
+
 end subroutine
 
 
@@ -60,12 +68,31 @@ subroutine dumpVisBuff(this,label)
     character(len=clen) :: tempname, fname
     character(len=4), intent(in) :: label
 
-     write(tempname,"(A3,I2.2,A1,A4,A2,I6.6,A4)") "Run",this%runID, "_",label,"_t",this%step,".out"
-     fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
-     call decomp_2d_write_one(3,this%VisBuff,fname,this%gp)
+    write(tempname,"(A3,I2.2,A1,A4,A2,I6.6,A4)") "Run",this%runID, "_",label,"_t",this%step,".out"
+    fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
+    call decomp_2d_write_one(3,this%VisBuff,fname,this%gp)
 
 end subroutine
 
+subroutine dump_stats(this)
+   use basic_io, only: write_2d_ascii
+    class(d3q19), intent(inout) :: this
+    character(len=clen) :: fname, tempname 
+
+    write(tempname,"(A3,I2.2,A6,A2,I6.6,A2,I6.6,A4)") "Run",this%runid,"_stats","_t",this%step,"_n",this%dat_count,".stt"
+    fname = this%stats_dir(:len_trim(this%stats_dir))//"/"//trim(tempname)
+    
+    this%dat_array = this%sum_array/real(this%dat_count,rkind)
+    
+    this%dat_array(:,4) = this%dat_array(:,4) - this%dat_array(:,1)*this%dat_array(:,1)
+    this%dat_array(:,5) = this%dat_array(:,5) - this%dat_array(:,1)*this%dat_array(:,2)
+    this%dat_array(:,6) = this%dat_array(:,6) - this%dat_array(:,1)*this%dat_array(:,3)
+    this%dat_array(:,7) = this%dat_array(:,7) - this%dat_array(:,2)*this%dat_array(:,2)
+    this%dat_array(:,8) = this%dat_array(:,8) - this%dat_array(:,2)*this%dat_array(:,3)
+    this%dat_array(:,9) = this%dat_array(:,9) - this%dat_array(:,3)*this%dat_array(:,3)
+
+    call write_2d_ascii(this%dat_array, fname) 
+end subroutine 
 
 subroutine dumpVisualizationFields(this)
     class(d3q19), intent(inout) :: this

@@ -64,6 +64,9 @@
     subroutine destroy(this)
         class(d3q19), intent(inout) :: this
 
+        if (this%compute_stats) then
+            call this%end_stats()
+        end if 
         deallocate(this%f, this%ux, this%uy, this%uz, this%rho)
         deallocate(this%XYslice, this%XZslice, this%YZslice)
         deallocate(this%YZsendb, this%XZsendb)

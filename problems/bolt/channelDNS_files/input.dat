@@ -2,7 +2,7 @@
 nx = 900 
 ny = 450 
 nz = 301
-step_stop = 250000
+step_stop = 500000
 restartSimulation = .false.
 restart_runID = 1
 restart_timeID = 5000
@@ -12,7 +12,7 @@ restartWithTau = .true.
 &PHYSICS
 CollisionModel = 2
 useConstantBodyForce = .true. 
-useSGSmodel = .true. 
+useSGSmodel = .false. 
 isZPeriodic = .false. 
 Re = 1.d04 
 delta_x = 0.006666666666667 
@@ -26,10 +26,18 @@ c_smag = 0.16d0
 /
 /
 &IO
-inputdir          = "/nobackup/aghate/channelDNS"   ! Directory for any input files
-outputdir         = "/nobackup/aghate/channelDNS"   ! Directory for all output files
-RunID             = 1
-tid_vis           = 2000
-tid_restart       = 10000
+inputdir          = "/scratch/04076/tg833754/channel_lbm/output"   ! Directory for any input files
+outputdir         = "/scratch/04076/tg833754/channel_lbm/output"   ! Directory for all output files
+RunID             = 2
+tid_vis           = 10000
+tid_restart       = 20000
 /
 /
+&STATS
+compute_stats  = .true.
+tid_stats_dump = 2000
+stats_freq     = 20 
+stats_dir      = "/scratch/04076/tg833754/channel_lbm/stats"
+/
+/
+

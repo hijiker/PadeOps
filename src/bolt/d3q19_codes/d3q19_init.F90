@@ -77,6 +77,10 @@
             call this%compute_tau_smag()
         end if
 
+        if (this%compute_stats) then
+            call this%start_stats()
+        end if 
+
         call message(0, "D3Q19 lattice initialized.")
         call message(1, "nu_visc", this%nu)
     end subroutine 

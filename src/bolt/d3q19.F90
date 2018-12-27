@@ -96,6 +96,14 @@ module d3q19mod
         logical :: EndSim = .false. 
         integer :: step_stop = 9999999 
 
+
+        ! Stats
+        real(rkind), dimension(:,:), allocatable  :: dat_array, sum_array
+        integer :: dat_count, tid_stats_dump, stats_freq 
+        logical :: compute_stats = .false. 
+        character(len=clen) ::  stats_dir 
+        real(rkind), dimension(:), allocatable :: stats_1d
+
         contains
             procedure :: init
             procedure :: destroy
@@ -135,7 +143,12 @@ module d3q19mod
             procedure, private :: transform_Force_to_mspace 
             procedure, private :: compute_Meq 
 
- 
+            procedure, private :: start_stats
+            procedure, private :: end_stats
+            procedure, private :: average_xy
+            procedure, private :: dump_stats
+            procedure, private :: calculate_stats
+
             procedure, private :: get_ddx
             procedure, private :: get_ddy
             procedure, private :: get_ddz
@@ -158,6 +171,7 @@ contains
 #include "conversions_code/macro_to_feq.F90"
 #include "BC_code/NEQ_BB_reg.F90"
 #include "SGS_code/Smag.F90"
+#include "stats/bolt_stats.F90"
 
 ! D3Q19 SPECIFIC PROCEDURES
 #include "d3q19_codes/d3q19_streaming.F90"
@@ -230,6 +244,15 @@ contains
             call this%dumpVisualizationFields()
         end if
 
+        if (this%compute_stats) then
+            if ((mod(this%step, this%stats_freq) == 0) .or. this%EndSim) then
+                call this%calculate_stats()
+            end if 
+            
+            if ((mod(this%step, this%tid_stats_dump) == 0) .or. this%EndSim) then
+                call this%dump_stats()
+            end if 
+        end if 
         
     end subroutine 
 
@@ -289,12 +312,6 @@ contains
                         this%Pitensor(5,i,j,k) = this%Pitensor(5,i,j,k) + cy(idx)*cz(idx)*(fneq + half*Fvals(idx))
                         this%Pitensor(6,i,j,k) = this%Pitensor(6,i,j,k) + cz(idx)*cz(idx)*(fneq + half*Fvals(idx))
                         
-                        !this%Pitensor(1,i,j,k) = this%Pitensor(1,i,j,k) + this%Qtensor(1,1,idx)*(fneq + half*Fvals(idx))
-                        !this%Pitensor(2,i,j,k) = this%Pitensor(2,i,j,k) + this%Qtensor(1,2,idx)*(fneq + half*Fvals(idx))
-                        !this%Pitensor(3,i,j,k) = this%Pitensor(3,i,j,k) + this%Qtensor(1,3,idx)*(fneq + half*Fvals(idx))
-                        !this%Pitensor(4,i,j,k) = this%Pitensor(4,i,j,k) + this%Qtensor(2,2,idx)*(fneq + half*Fvals(idx))
-                        !this%Pitensor(5,i,j,k) = this%Pitensor(5,i,j,k) + this%Qtensor(2,3,idx)*(fneq + half*Fvals(idx))
-                        !this%Pitensor(6,i,j,k) = this%Pitensor(6,i,j,k) + this%Qtensor(3,3,idx)*(fneq + half*Fvals(idx))
                     end do
                 end do
             end do 
