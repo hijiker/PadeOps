@@ -71,10 +71,15 @@
         
         call this%compute_macroscopic()
     
-        this%c_smag_sq = this%c_smag**2
+        this%c_sgs_sq = this%c_sgs**2
         
         if (this%useSGSmodel) then
-            call this%compute_tau_smag()
+            select case (this%SGS_model_type) 
+            case default
+                call this%compute_tau_smag()
+            case (1)
+                call this%compute_tau_sigma()
+            end select 
         end if
 
         if (this%compute_stats) then
@@ -82,8 +87,4 @@
         end if 
 
         call message(0, "D3Q19 lattice initialized.")
-        call message(1, "nu_visc", this%nu)
     end subroutine 
-
-
-

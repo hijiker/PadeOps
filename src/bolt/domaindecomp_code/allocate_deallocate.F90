@@ -51,9 +51,9 @@
             allocate(this%rbuffx2(this%gp%xsz(1),this%gp%xsz(2),this%gp%xsz(3)))
             allocate(this%rbuffy1(this%gp%ysz(1),this%gp%ysz(2),this%gp%ysz(3)))
             allocate(this%rbuffy2(this%gp%ysz(1),this%gp%ysz(2),this%gp%ysz(3)))
-            allocate(this%rbuffz1(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
-            allocate(this%rbuffz2(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
         end if
+        allocate(this%rbuffz1(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
+        allocate(this%rbuffz2(this%gp%zsz(1),this%gp%zsz(2),this%gp%zsz(3)))
 
         this%Fx = zero
         this%Fy = zero

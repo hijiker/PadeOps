@@ -7,13 +7,13 @@ subroutine read_inputfile(this, inputfile)
         character(len=clen) :: inputdir, outputdir, stats_dir
         logical ::  isZPeriodic=.false., useConstantBodyForce, useSGSmodel=.false., compute_stats = .false. 
         logical :: restartSimulation=.false., useSpaceTimeBodyForce = .false., restartWithTau = .false. 
-        real(rkind) :: Re = 10.d0, delta_t = 0.1d0, delta_x = 0.2d0, Fx = zero, Fy = zero, Fz = zero, c_smag = 0.16d0
-        integer :: step_stop = 999999, tid_stats_dump, stats_freq
+        real(rkind) :: Re = 10.d0, delta_t = 0.1d0, delta_x = 0.2d0, Fx = zero, Fy = zero, Fz = zero, c_sgs = 0.16d0
+        integer :: step_stop = 999999, tid_stats_dump, stats_freq, stats_start = 999999, sgs_model_type = 0
 
         namelist /INPUT/ nx, ny, nz, step_stop, restartSimulation, restart_runID, restart_timeID, restartwithTau
-        namelist /PHYSICS/ CollisionModel, useConstantBodyForce, useSGSmodel, isZperiodic, Re, delta_x, delta_t, Fx, Fy, Fz, useSpaceTimeBodyForce, gradient_type, c_smag 
+        namelist /PHYSICS/ CollisionModel, sgs_model_type,useConstantBodyForce, useSGSmodel, isZperiodic, Re, delta_x, delta_t, Fx, Fy, Fz, useSpaceTimeBodyForce, gradient_type, c_sgs 
         namelist /IO/ inputdir, outputdir, RunID, tid_vis, tid_restart 
-        namelist /STATS/ compute_stats, tid_stats_dump, stats_freq, stats_dir  
+        namelist /STATS/ compute_stats, tid_stats_dump, stats_freq, stats_dir,stats_start 
 
 
         open(unit=123, file=trim(inputfile), form='FORMATTED', iostat=ierr)
@@ -36,7 +36,8 @@ subroutine read_inputfile(this, inputfile)
         this%useSpaceTimeBodyForce = useSpaceTimeBodyForce
         this%restartWithTau = restartwithTau
         this%gradient_type = gradient_type
-        this%c_smag = c_smag
+        this%c_sgs = c_sgs
+        this%sgs_model_type = sgs_model_type
         this%step_stop = step_stop
 
         this%nx = nx
@@ -58,6 +59,7 @@ subroutine read_inputfile(this, inputfile)
         this%tid_stats_dump = tid_stats_dump
         this%stats_freq = stats_freq
         this%stats_dir = stats_dir 
+        this%stats_start = stats_start
 
 end subroutine
 
@@ -75,7 +77,8 @@ subroutine dumpVisBuff(this,label)
 end subroutine
 
 subroutine dump_stats(this)
-   use basic_io, only: write_2d_ascii
+    use basic_io, only: write_2d_ascii
+    use decomp_2d,only: nrank 
     class(d3q19), intent(inout) :: this
     character(len=clen) :: fname, tempname 
 
@@ -91,7 +94,13 @@ subroutine dump_stats(this)
     this%dat_array(:,8) = this%dat_array(:,8) - this%dat_array(:,2)*this%dat_array(:,3)
     this%dat_array(:,9) = this%dat_array(:,9) - this%dat_array(:,3)*this%dat_array(:,3)
 
-    call write_2d_ascii(this%dat_array, fname) 
+    this%dat_array(:,1:3) = this%dat_array(:,1:3)*this%delta_u
+    this%dat_array(:,4:9) = this%dat_array(:,4:9)*this%delta_u*this%delta_u
+    ! Nothing to do to rho_mn (index: 10) 
+    
+    if (nrank == 0) then
+        call write_2d_ascii(this%dat_array, fname) 
+    end if 
 end subroutine 
 
 subroutine dumpVisualizationFields(this)
@@ -109,7 +118,7 @@ subroutine dumpVisualizationFields(this)
     this%visBuff = this%uz*this%delta_u   
     call this%dumpVisBuff("wVel")
 
-    if (allocated(this%nusgs)) then
+    if (this%useSGSmodel) then
         this%visBuff = this%nusgs*this%delta_nu
         call this%dumpVisBuff("nSGS")
     end if 

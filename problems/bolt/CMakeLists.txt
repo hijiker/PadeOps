@@ -13,7 +13,7 @@ foreach ( boltproblemfile ${boltproblems_source_files} )
   
     add_executable( ${boltproblemexec} ${boltproblemfile} )
     
-    target_link_libraries( ${boltproblemexec} BoltOps 2decomp_fft fftw3)
+    target_link_libraries( ${boltproblemexec} BoltOps IncompressibleOps 2decomp_fft fftw3)
 
     if (MPI_Fortran_COMPILER_FLAGS)
         set_target_properties(${boltproblemexec} PROPERTIES COMPILE_FLAGS "${CMAKE_Fortran_FLAGS}")

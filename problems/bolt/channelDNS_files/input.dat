@@ -2,11 +2,11 @@
 nx = 900 
 ny = 450 
 nz = 301
-step_stop = 500000
-restartSimulation = .false.
-restart_runID = 1
-restart_timeID = 5000
-restartWithTau = .true. 
+step_stop = 900000
+restartSimulation = .true.
+restart_runID = 2
+restart_timeID = 480000
+restartWithTau = .false. 
 /
 /
 &PHYSICS
@@ -22,22 +22,24 @@ Fy = 0.d0
 Fz = 0.d0 
 useSpaceTimeBodyForce = .true. 
 gradient_type = 3
-c_smag = 0.16d0 
+sgs_model_type = 1 
+c_sgs = 0.16d0 
 /
 /
 &IO
-inputdir          = "/scratch/04076/tg833754/channel_lbm/output"   ! Directory for any input files
-outputdir         = "/scratch/04076/tg833754/channel_lbm/output"   ! Directory for all output files
-RunID             = 2
+inputdir          = "/scratch/04076/tg833754/channel_lbm/output/DNS"   ! Directory for any input files
+outputdir         = "/scratch/04076/tg833754/channel_lbm/output/DNS"   ! Directory for all output files
+RunID             = 3
 tid_vis           = 10000
 tid_restart       = 20000
 /
 /
 &STATS
 compute_stats  = .true.
-tid_stats_dump = 2000
+tid_stats_dump = 10000
 stats_freq     = 20 
-stats_dir      = "/scratch/04076/tg833754/channel_lbm/stats"
+stats_dir      = "/scratch/04076/tg833754/channel_lbm/stats/DNS"
+stats_start    = 490000
 /
 /
 

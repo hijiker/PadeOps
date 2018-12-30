@@ -98,10 +98,4 @@ subroutine get_sigma_kernel(nu_sgs, duidxj, nxL, nyL, nzL)
       end do 
    end do
 
-   !print*, duidxj(5,6,3,:)
-   !print*, sum(abs(nu_sgs(:,:,:)))
-   !print*, sum(abs(duidxj(:,:,:,1))), sum(abs(duidxj(:,:,:,2))), sum(abs(duidxj(:,:,:,3)))
-   !print*, sum(abs(duidxj(:,:,:,4))), sum(abs(duidxj(:,:,:,5))), sum(abs(duidxj(:,:,:,6)))
-   !print*, sum(abs(duidxj(:,:,:,7))), sum(abs(duidxj(:,:,:,8))), sum(abs(duidxj(:,:,:,9)))
-
 end subroutine

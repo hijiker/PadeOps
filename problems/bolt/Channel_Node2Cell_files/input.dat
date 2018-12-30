@@ -1,0 +1,12 @@
+&INPUT
+nx                    = 900 
+ny                    = 450
+nz                    = 300
+tid_input             = 700000
+tid_output            = 0
+rid_input             = 30
+rid_output            = 32
+inputdir              = "/scratch/04076/tg833754/channel_lbm/output/LES"   ! Directory for any input files
+outputdir             = "/scratch/04076/tg833754/channel_lbm/output/LES"   ! Directory for all output files
+/
+/

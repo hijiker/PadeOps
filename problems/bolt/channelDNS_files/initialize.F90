@@ -14,7 +14,11 @@ module d3q19_channelDNS
     real(rkind), parameter :: lambda2_force = 10.d0 
     real(rkind), parameter :: Fbase = 2.953879d-03 
     real(rkind), parameter :: Force_amp = 15.d0     
-   
+  
+    integer,     parameter :: Forcing_Type = 1
+    real(rkind), parameter :: umean_target = 0.1d0
+
+    real(rkind) :: umean = 0.d0  
 end module 
 
 module get_initial_profiles_channel
@@ -181,9 +185,11 @@ subroutine getWall_nut(decomp, delta_nu, ux, uy, uz, Re, tau_B, tau_T)
     real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
     real(rkind), intent(in) :: Re
     real(rkind), dimension(:,:), intent(out) :: tau_B, tau_T 
-
-    tau_B = half
-    tau_T = half
+    real(rkind) ::nu, oneByCsq
+    oneByCsq = 3.d0 
+    nu = (one/Re)/delta_nu
+    tau_B = half + oneByCsq*nu
+    tau_T = half + oneByCsq*nu
 
 end subroutine 
 
@@ -192,16 +198,31 @@ subroutine getBodyForce(decomp, time, delta_u, delta_t, ux, uy, uz, Fx, Fy, Fz)
     use kind_parameters, only:  rkind, clen
     use decomp_2d, only: decomp_info
     use constants, only: pi
-    
+    use reductions, only: p_sum 
+
     implicit none
     type(decomp_info), intent(in) :: decomp
     real(rkind), intent(in) :: time, delta_t, delta_u 
     real(rkind), dimension(:,:,:), intent(in) :: ux, uy, uz
     real(rkind), dimension(:,:,:), intent(out) :: Fx, Fy, Fz 
+    
+    real(rkind) :: mnorm
 
-    Fz = 0.d0 
-    Fy = 0.d0
-    Fx = Fbase*delta_t/delta_u
+    mnorm = 1.d0/(real(decomp%xsz(1),rkind)*real(decomp%ysz(2),rkind)*real(decomp%zsz(3),rkind))
+    umean= p_sum(sum(ux))*mnorm
+
+    select case (Forcing_type)
+    case (1)
+        Fz = 0.d0 
+        Fy = 0.d0
+        Fx = Fbase*delta_t/delta_u + delta_t*(umean_target - umean)
+    case default
+        Fz = 0.d0 
+        Fy = 0.d0
+        Fx = Fbase*delta_t/delta_u
+    end select 
+
+
 end subroutine 
 
 

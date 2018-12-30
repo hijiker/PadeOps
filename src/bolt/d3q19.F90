@@ -67,11 +67,11 @@ module d3q19mod
 
         integer :: CollisionModel, restart_RunID, restart_timeID, RunID, tid_vis=10000, tid_restart=10000
 
-        integer :: step, gradient_type = 1 
+        integer :: step, gradient_type = 1, SGS_model_type = 0
 
         logical :: useSGSmodel = .false., useSpaceTimeBodyForce = .false. 
         
-        real(rkind) :: C_smag = 0.16_rkind, C_smag_sq 
+        real(rkind) :: c_sgs = 0.16_rkind, c_sgs_sq 
 
         ! Finite difference 
         real(rkind), dimension(:,:,:,:,:), allocatable :: duidxj
@@ -99,7 +99,7 @@ module d3q19mod
 
         ! Stats
         real(rkind), dimension(:,:), allocatable  :: dat_array, sum_array
-        integer :: dat_count, tid_stats_dump, stats_freq 
+        integer :: dat_count, tid_stats_dump, stats_freq, stats_start = 999999 
         logical :: compute_stats = .false. 
         character(len=clen) ::  stats_dir 
         real(rkind), dimension(:), allocatable :: stats_1d
@@ -122,6 +122,7 @@ module d3q19mod
 
             procedure, private :: compute_macroscopic_hplane 
             procedure, private :: compute_tau_smag
+            procedure, private :: compute_tau_sigma
             procedure, private :: collision_BGK 
             procedure, private :: collision_BGK_Force 
             procedure, private :: RegBGK_Force 
@@ -171,7 +172,9 @@ contains
 #include "conversions_code/macro_to_feq.F90"
 #include "BC_code/NEQ_BB_reg.F90"
 #include "SGS_code/Smag.F90"
+#include "SGS_code/Sigma.F90"
 #include "stats/bolt_stats.F90"
+#include "derivatives/second_order_collocated.F90"
 
 ! D3Q19 SPECIFIC PROCEDURES
 #include "d3q19_codes/d3q19_streaming.F90"
@@ -219,7 +222,6 @@ contains
     end subroutine 
 
     subroutine wrapup_timestep(this)
-        use reductions, only: p_maxval
         class(d3q19), intent(inout) :: this
 
         this%step = this%step + 1
@@ -232,7 +234,12 @@ contains
         end if 
 
         if (this%useSGSmodel) then
-            call this%compute_tau_smag()
+            select case (this%SGS_model_type) 
+            case default
+                call this%compute_tau_smag()
+            case (1)
+                call this%compute_tau_sigma()
+            end select 
         end if
 
         if (this%useSpaceTimeBodyForce) then
@@ -244,7 +251,7 @@ contains
             call this%dumpVisualizationFields()
         end if
 
-        if (this%compute_stats) then
+        if ((this%compute_stats) .and. (this%step > this%stats_start)) then
             if ((mod(this%step, this%stats_freq) == 0) .or. this%EndSim) then
                 call this%calculate_stats()
             end if 
