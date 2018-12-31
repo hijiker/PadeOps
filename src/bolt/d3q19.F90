@@ -63,7 +63,7 @@ module d3q19mod
         real(rkind), dimension(3,3,nvels) :: QTensor
 
         logical :: useRestart = .false., useConstantBodyForce = .false., isZPeriodic = .true.
-        logical :: restartWithTau = .false. 
+        logical :: useBoundaryTau = .false., restartWithTau = .false. 
 
         integer :: CollisionModel, restart_RunID, restart_timeID, RunID, tid_vis=10000, tid_restart=10000
 
@@ -153,7 +153,9 @@ module d3q19mod
             procedure, private :: get_ddx
             procedure, private :: get_ddy
             procedure, private :: get_ddz
-            procedure, private :: get_gradient 
+            procedure, private :: get_gradient
+            procedure, private :: compute_tau_sgs
+
     end type
 
 
@@ -184,6 +186,8 @@ contains
         use timer, only: tic, toc
         class(d3q19), intent(inout) :: this
 
+        call this%compute_tau_sgs()
+
         call this%collide()
         
         call this%stream()   ! Look at "d3q19_codes/d3q19_streaming.F90"
@@ -196,6 +200,20 @@ contains
 
     end subroutine 
 
+    subroutine compute_tau_sgs(this)
+        class(d3q19), intent(inout) :: this
+
+        if (this%useSGSmodel) then
+            select case (this%SGS_model_type) 
+            case default
+                call this%compute_tau_smag()
+            case (1)
+                call this%compute_tau_sigma()
+            end select 
+        end if
+
+    end subroutine 
+    
     pure function getPhysTime(this) result(time)
         class(d3q19), intent(in) :: this
         real(rkind) :: time
@@ -233,14 +251,6 @@ contains
             call this%dumpRestart()
         end if 
 
-        if (this%useSGSmodel) then
-            select case (this%SGS_model_type) 
-            case default
-                call this%compute_tau_smag()
-            case (1)
-                call this%compute_tau_sigma()
-            end select 
-        end if
 
         if (this%useSpaceTimeBodyForce) then
             call getBodyForce(this%gp, this%getPhysTime(),this%delta_u, this%delta_t, &

@@ -13,21 +13,25 @@ subroutine doTemporalStuff(bgp)
     real(rkind) :: fmin, fmax
     real(rkind) :: utau_mn
 
-    utau_mn = 0.5d0*(p_sum(utau_up) + p_sum(utau_do))/real(bgp%nx*bgp%ny,rkind)
-
     fmax = p_maxval(maxval(bgp%f))
     fmin = p_minval(minval(bgp%f))
     
     
     call message(0,"Time:", bgp%getPhysTime())
     call message(0,"TIDX:", bgp%step)
-    call message(1,"u_tau:", utau_mn)
+    call message(0,"u_mean:", umean)
     call message_min_max(1,"Bounds for f  :", fmin, fmax) 
     call message_min_max(1,"Bounds for u  :", p_minval(minval(bgp%ux))*bgp%delta_u, p_maxval(maxval(bgp%ux))*bgp%delta_u)
     call message_min_max(1,"Bounds for v  :", p_minval(minval(bgp%uy))*bgp%delta_u, p_maxval(maxval(bgp%uy))*bgp%delta_u)
     call message_min_max(1,"Bounds for w  :", p_minval(minval(bgp%uz))*bgp%delta_u, p_maxval(maxval(bgp%uz))*bgp%delta_u)
     call message_min_max(1,"Bounds for rho:", p_minval(minval(bgp%rho)), p_maxval(maxval(bgp%rho)))
-    call message_min_max(1,"Bounds for nuT:", p_minval(minval(bgp%nuSGS)), p_maxval(maxval(bgp%nuSGS)))
+    if (bgp%useSGSmodel) then
+        call message_min_max(1,"Bounds for nut:", bgp%delta_nu*p_minval(minval(bgp%nuSGS)), bgp%delta_nu*p_maxval(maxval(bgp%nuSGS)))
+    end if 
+    if ((allocated(utau_up)) .and. (allocated(utau_do))) then
+        utau_mn = 0.5*(p_sum(sum(utau_up)) + p_sum(sum(utau_do)))/real(bgp%gp%xsz(1)*bgp%gp%ysz(2),rkind)
+        call message(1, "u_tau", utau_mn)
+    end if 
     call toc()
     call message("========================================")
     call tic()

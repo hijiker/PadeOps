@@ -1,6 +1,6 @@
 subroutine start_stats(this)
     class(d3q19), intent(inout) :: this
-    integer, parameter :: n_means = 10
+    integer, parameter :: n_means = 11
 
     allocate(this%dat_array(this%nz,n_means))
     allocate(this%sum_array(this%nz,n_means))
@@ -57,6 +57,9 @@ subroutine calculate_stats(this)
     
     call this%average_xy(this%rho)
     this%sum_array(:,10) = this%sum_array(:,10) + this%stats_1d
+
+    call this%average_xy(this%nusgs)
+    this%sum_array(:,11) = this%sum_array(:,11) + this%stats_1d
 
     this%dat_count = this%dat_count + 1
 

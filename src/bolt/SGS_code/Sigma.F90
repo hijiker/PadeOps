@@ -11,13 +11,8 @@ subroutine compute_tau_sigma(this)
     call this%compute_duidxj(.true.)
     
     scale_fact = ((this%c_sgs*this%delta_x)**2)/this%delta_nu
-    if (this%isZPeriodic) then
-        kst = 1
-        ken = this%gp%zsz(3)
-    else
-        kst = 2
-        ken = this%gp%zsz(3) - 1
-    end if
+    kst = 1
+    ken = this%gp%zsz(3)
     
     do k = kst,ken
        do j = 1,this%gp%zsz(2)
@@ -82,9 +77,11 @@ subroutine compute_tau_sigma(this)
     end do
 
     if (.not. this%iszperiodic) then
-        call getWall_nut(this%gp, this%delta_nu, this%ux, this%uy, this%uz, this%Re, this%tau_B, this%tau_T)
-        this%tau(:,:,1) = this%tau_B
-        this%tau(:,:,this%gp%zsz(3)) = this%tau_T
+        if (this%useBoundaryTau) then
+            call getWall_nut(this%gp, this%delta_nu, this%ux, this%uy, this%uz, this%Re, this%tau_B, this%tau_T)
+            this%tau(:,:,1) = this%tau_B
+            this%tau(:,:,this%gp%zsz(3)) = this%tau_T
+        end if 
     end if 
 
 

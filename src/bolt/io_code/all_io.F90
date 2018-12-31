@@ -6,12 +6,13 @@ subroutine read_inputfile(this, inputfile)
         integer :: tid_vis, tid_restart, ierr, gradient_type = 1 
         character(len=clen) :: inputdir, outputdir, stats_dir
         logical ::  isZPeriodic=.false., useConstantBodyForce, useSGSmodel=.false., compute_stats = .false. 
-        logical :: restartSimulation=.false., useSpaceTimeBodyForce = .false., restartWithTau = .false. 
+        logical :: useBoundaryTau = .false., restartSimulation=.false., useSpaceTimeBodyForce = .false., restartWithTau = .false. 
         real(rkind) :: Re = 10.d0, delta_t = 0.1d0, delta_x = 0.2d0, Fx = zero, Fy = zero, Fz = zero, c_sgs = 0.16d0
         integer :: step_stop = 999999, tid_stats_dump, stats_freq, stats_start = 999999, sgs_model_type = 0
 
         namelist /INPUT/ nx, ny, nz, step_stop, restartSimulation, restart_runID, restart_timeID, restartwithTau
-        namelist /PHYSICS/ CollisionModel, sgs_model_type,useConstantBodyForce, useSGSmodel, isZperiodic, Re, delta_x, delta_t, Fx, Fy, Fz, useSpaceTimeBodyForce, gradient_type, c_sgs 
+        namelist /PHYSICS/ CollisionModel, sgs_model_type,useConstantBodyForce, useSGSmodel, isZperiodic, Re, delta_x, delta_t, &
+                    & Fx, Fy, Fz, useSpaceTimeBodyForce, gradient_type, c_sgs, useBoundaryTau  
         namelist /IO/ inputdir, outputdir, RunID, tid_vis, tid_restart 
         namelist /STATS/ compute_stats, tid_stats_dump, stats_freq, stats_dir,stats_start 
 
@@ -39,6 +40,7 @@ subroutine read_inputfile(this, inputfile)
         this%c_sgs = c_sgs
         this%sgs_model_type = sgs_model_type
         this%step_stop = step_stop
+        this%useBoundaryTau = useBoundaryTau
 
         this%nx = nx
         this%ny = ny
@@ -96,7 +98,8 @@ subroutine dump_stats(this)
 
     this%dat_array(:,1:3) = this%dat_array(:,1:3)*this%delta_u
     this%dat_array(:,4:9) = this%dat_array(:,4:9)*this%delta_u*this%delta_u
-    ! Nothing to do to rho_mn (index: 10) 
+    
+    ! Nothing to do to rho_mn (index: 10) and nusgs (index:11)
     
     if (nrank == 0) then
         call write_2d_ascii(this%dat_array, fname) 
@@ -136,16 +139,16 @@ subroutine dumpRestart(this)
         call decomp_2d_write_one(3,this%f(:,:,:,vid),fname, this%gp)
     end do 
 
-    write(tempname,"(A7,A4,I2.2,A4,A1,I6.6)") "RESTART", "_Run",this%runID, "_tau",".",this%step
-    fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
-    call decomp_2d_write_one(3,this%tau,fname, this%gp)
+    !write(tempname,"(A7,A4,I2.2,A4,A1,I6.6)") "RESTART", "_Run",this%runID, "_tau",".",this%step
+    !fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
+    !call decomp_2d_write_one(3,this%tau,fname, this%gp)
 end subroutine
 
 
 subroutine readRestart(this)
     use decomp_2d_io
     use mpi 
-    use exits, only: gracefulExit
+    use exits, only: message, gracefulExit
     class(d3q19), intent(inout) :: this
     character(len=clen) :: tempname, fname
     integer :: vid, ierr
@@ -164,15 +167,16 @@ subroutine readRestart(this)
     end do 
     
     if (this%restartWithTau) then
-        write(tempname,"(A7,A4,I2.2,A4,A1,I6.6)") "RESTART", "_Run",this%restart_runID, "_tau",".",this%restart_timeID
-        fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
-        open(777,file=trim(fname),status='old',iostat=ierr)
-        if(ierr .ne. 0) then
-            print*, "Rank:", nrank, ". File:", fname, " not found"
-            call mpi_barrier(mpi_comm_world, ierr)
-            call gracefulExit("File I/O issue.",44)
-        end if 
-        call decomp_2d_read_one(3,this%tau,fname,this%gp)
+        !write(tempname,"(A7,A4,I2.2,A4,A1,I6.6)") "RESTART", "_Run",this%restart_runID, "_tau",".",this%restart_timeID
+        !fname = this%OutputDir(:len_trim(this%OutputDir))//"/"//trim(tempname)
+        !open(777,file=trim(fname),status='old',iostat=ierr)
+        !if(ierr .ne. 0) then
+        !    print*, "Rank:", nrank, ". File:", fname, " not found"
+        !    call mpi_barrier(mpi_comm_world, ierr)
+        !    call gracefulExit("File I/O issue.",44)
+        !end if 
+        !call decomp_2d_read_one(3,this%tau,fname,this%gp)
+        call message(0,"WARNING: Restartwithtau redacted")
     end if  
 
     this%step = this%restart_timeID

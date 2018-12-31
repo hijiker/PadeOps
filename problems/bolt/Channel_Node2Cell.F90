@@ -52,7 +52,7 @@ program Channel_Node2Cell
          call der%interpz_E2C(fE, fC, 0, 0)
           
          write(tempname,"(A7,A4,I2.2,A2,I3.3,A1,I6.6)") "RESTART", "_Run",RID_output, "_f",idx,".",tid_output
-         fname1 = OutputDir(:len_trim(OutputDir))//"/"//trim(tempname)
+         fname2 = OutputDir(:len_trim(OutputDir))//"/"//trim(tempname)
          call decomp_2d_write_one(3,fC,fname2, gpC)
 
          call message(0, "Restart file generated for velocity index", idx)
